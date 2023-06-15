@@ -1,3 +1,5 @@
+package com.canvs.exercise;
+
 import java.util.Scanner;
 
 public class BreakPrimeNumber {

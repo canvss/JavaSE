@@ -1,3 +1,5 @@
+package com.canvs.loop;
+
 public class ForDemo3 {
     public static void main(String[] args) {
         for (;;){

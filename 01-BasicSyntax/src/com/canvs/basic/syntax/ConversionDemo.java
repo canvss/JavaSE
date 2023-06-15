@@ -1,3 +1,5 @@
+package com.canvs.basic.syntax;
+
 public class ConversionDemo {
     public static void main(String [] args){
         int i = 'A';

@@ -1,3 +1,5 @@
+package com.canvs.exercise;
+
 public class BreakLabel {
     public static void main(String[] args) {
         label:for (int i=1; i<=5;i++){

@@ -109,7 +109,7 @@ double：双精度浮点型，占内存：8个字节，精度：科学计数法�
 - Sting字符串常量值，必须使用shaun过引号
 
 ```java
-public class ConstantDemo {
+public class com.canvs.basic.syntax.ConstantDemo {
     public static void main(String[] args) {
         System.out.println(12);
         System.out.println(-22);
@@ -171,7 +171,7 @@ int a,b,c;
 最终变量习惯也称为常量，因为它是通过在声明变量的数据类型前面加final的方式实现的，所以叫最终变量。加final修饰后，这个变量的值就不能修改了，一开始赋值多少就是多少，所以此时的变量通常称为常量名。常量名通常所有字母都大写，每一个单词之间使用下划线分割，从命名上和变量名区分开来。
 
 ```java
-public class FinalVariableDemo {
+public class com.canvs.basic.syntax.FinalVariableDemo {
     public static void main(String [] args){
         final int FULL_MARK = 100;
         System.out.println("满分：" + FULL_MARK);
@@ -268,7 +268,7 @@ System.out.println("及格：" + 1 + 3);
 | `++` 、  `--` |          自增自减运算           |
 
 ```java
-public class OperatorDemo {
+public class com.canvs.basic.syntax.OperatorDemo {
     public static void main(String [] args){
         int a = 3;
         int b = 4;
@@ -305,7 +305,7 @@ public class OperatorDemo {
 - 其中>,<,>=,<=,不支持boolean，String类型， ==和!=支持boolean和String
 
 ```java
-public class OperatorDemo2 {
+public class com.canvs.basic.syntax.OperatorDemo2 {
     public static void main(String [] args){
         int a = 3;
         int b = 4;
@@ -331,7 +331,7 @@ public class OperatorDemo2 {
 |    `||`    | 双或，短路或 |       左边为true，则右边就不看       |
 
 ```java
-public class OperatorDemo3 {
+public class com.canvs.basic.syntax.OperatorDemo3 {
     public static void main(String [] args){
         int a = 3;
         int b = 4;
@@ -353,7 +353,7 @@ public class OperatorDemo3 {
   - 条件判断的结果是false，条件运算符整体结果为结果2，赋值给变量
 
 ```java 
-public class OperatorDemo4 {
+public class com.canvs.basic.syntax.OperatorDemo4 {
     public static void main(String[] args) {
         int i = (1==2 ? 100 : 200);
         System.out.println(i);  //200
@@ -396,7 +396,7 @@ public class OperatorDemo4 {
 |   ^=   | 将左边变量的值和右边的常量值/变量值/表达式的值进行按位异或，最后将结果赋值给左边的变量 |
 
 ```java
-public class OperatorDemo5 {
+public class com.canvs.basic.syntax.OperatorDemo5 {
     public static void main(String[] args) {
         int a = 3;
         int b = 4;

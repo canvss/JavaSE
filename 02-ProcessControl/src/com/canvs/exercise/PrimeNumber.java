@@ -1,3 +1,5 @@
+package com.canvs.exercise;
+
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/13 13:25

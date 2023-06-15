@@ -1,3 +1,5 @@
+package com.canvs.loop;
+
 import java.util.Scanner;
 
 public class SwitchDemo2 {

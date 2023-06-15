@@ -1,3 +1,5 @@
+package com.canvs.basic.syntax;
+
 public class FinalVariableDemo {
     public static void main(String [] args){
         final int FULL_MARK = 100;

@@ -1,3 +1,5 @@
+package com.canvs.control;
+
 import java.util.Scanner;
 
 public class IfTest2 {

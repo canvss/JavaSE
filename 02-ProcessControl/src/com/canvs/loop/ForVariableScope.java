@@ -1,3 +1,5 @@
+package com.canvs.loop;
+
 public class ForVariableScope {
     public static void main(String[] args) {
         int num = 0;
