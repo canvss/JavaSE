@@ -22,7 +22,7 @@
 
 #### Java发展史
 
-Java最早是由斯坦福大学校园网**Stanford University Network（简称SUN）**已被Oracle收购）的[詹姆斯·高斯林](https://en.wikipedia.org/wiki/James_Gosling)（高司令，人称Java之父）在上个世纪90年代初开发的一种编程语言。
+Java最早是由斯坦福大学校园网 **Stanford University Network（简称SUN** 已被Oracle收购）的[詹姆斯·高斯林](https://en.wikipedia.org/wiki/James_Gosling)（高司令，人称Java之父）在上个世纪90年代初开发的一种编程语言。
 
 - Java SE（Standard Edition）：允许桌面和服务器开发和部署Java应用程序。
 - Java EE（Enterprise Edition）：为开发企业级环境下的应用程序提高了一套解决方案，主要针对Web应用程序开发。
