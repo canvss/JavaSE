@@ -523,5 +523,398 @@ public int multiply(int n){
     }
 ```
 
+#### 关键字：package、import
+
+- package称为包，用于指名该文件中定义的类、接口等结构所在的包
+  - 一个源文件只能有一个声明包的package语句；若缺省packgae语句，则为无名包
+  - 包对应文件系统的目录，package语句中 `.` 来指名包（目录）的层次。
+  - 同一个包下可以声明多个结构（类、接口），但不能定义同名的类和接口。不同的包下可以定义同名的类和接口。
+  - JDK中主要的包：
+    -  `java.lang` ：包含一些Java语言的核心类，如String、Math、System等。
+    -  `java.net` ：包含执行与网络相关的操作的类和接口。
+    -  `java.io` ：包含能提供多种输入/输出功能的类
+    -  `java.util` ：包含一些实用工具类
+    -  `java.text` ：包含一些java格式化相关的类
+    -  `java.sql` ：包含Java进行jdbc数据库编程相关的类/接口
+- import：为了使用定义在其他包中的Java类，需要用import语句来显式引入指定包下所需要的类。
+
+```java
+//包名
+package com.canvs.method;
+//导入java.util.Scanner方法
+import java.util.Scanner;
+```
+
+#### 面向对象特征一：封装性(encapsulation)
+
+所谓封装，就是把客观的事物封装成抽象概念的类，并且类可以把自己的数据和方法只向可信的类或者对象开放，向没必要开放的类或者对象隐藏信息。这就是封装性的设计思想。
+
+随着系统的越来越复杂，类会越来越多，那么类之间的访问边界必须把握好，面向对象的开放原则要遵循 `高类聚`、`低耦合`。
+
+- 高类聚：类的内部数据操作细节自己完成，不允许外部干涉；
+- 低耦合：仅暴露少量的方法给外部使用，尽量方便外部调用。
+
+> 高类聚、低耦合是软件工程中的概念，也是UNIX操作系统设计的经典原则。
+>
+> 内聚，指一个模块内各个元素彼此结合的紧密程度；耦合指一个软件结构内不同模块之间互连程度的度量。内举意味着重用和独立，耦合意味着多米诺效应牵一发动全身。
+
+#### Java如何实现数据封装
+
+- 实现封装就是控制类或成员的可见性范围。
+- 权限修饰符：public、protected、缺省、private。
+  - 外部类：public、缺省
+  - 成员变量、成员方法、构造器、成员内部类：public、protected、缺省、private
+
+|  修饰符   | 本类内部 | 本包内 | 其他包的子内 | 其他包非子类 |
+| :-------: | :------: | :----: | :----------: | :----------: |
+|  private  |    √     |   ×    |      ×       |      ×       |
+|   缺省    |    √     |   √    |      ×       |      ×       |
+| protected |    √     |   √    |      √       |      ×       |
+|  public   |    √     |   √    |      √       |      √       |
+
+#### 封装性的体现
+
+##### 成员变量/属性私有化
+
+私有化类的成员变量，提供公共的get和set方法，对外暴露获取和修改属性的功能。
+
+```java
+public class Person {
+    private String name;
+    private int age;
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+
+```java
+public class PersonTest {
+    public static void main(String[] args) {
+        Person p = new Person();
+        p.setName("Canvs");
+        p.setAge(23);
+        System.out.println("姓名：" + p.getName() +"\t年龄：" + p.getAge());
+    }
+}
+```
+
+##### 成员变量封装的好处：
+
+- 让使用者只能通过预先定义的方法来访问数据，从而可以在该方法里面加入控制逻辑，限制对成员变量不合理的访问。还可以进行数据检查，从而有利于保证对象信息的完整性。
+- 便于修改，提高代码的可维护性；例如：Java8 -> java9，String从char[]转为byte[]内部实现，而对外的方法不变，我们使用者根本察觉不到它内部的修改。
+
+> 对于final的实例变量，不提供set()方法。
+>
+> 对于static final的成员变量，习惯上使用public修饰。
+
+##### 私有化方法
+
+```java
+public class Person {
+    private String name;
+    private int age;
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+    public void showInfo(){
+        System.out.println(stringUtil());
+    }
+    private String stringUtil(){
+        return "【 姓名："+name+"   年龄："+age+" 】";
+    }
+}
+```
+
+```java
+public class PersonTest {
+    public static void main(String[] args) {
+        Person p = new Person();
+        p.setName("Canvs");
+        p.setAge(23);
+        p.showInfo();
+    }
+}
+```
+
+##### 练习：
+
+自定义图书类。设定属性包括:书名bookName，作者author，出版社名publisher，价格price;方法包
+
+括:相应属性的get/set方法，图书信息介绍等。
+
+```java
+public class Book {
+    private String bookName;
+    private String author;
+    private String publisher;
+    private double price;
+    public String getBookName() {
+        return bookName;
+    }
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
+    }
+    public String getAuthor() {
+        return author;
+    }
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+    public String getPublisher() {
+        return publisher;
+    }
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+    public double getPrice() {
+        return price;
+    }
+    public void setPrice(double price) {
+        this.price = price;
+    }
+    public String bookInfo(){
+        return "书名："+bookName+"  作者："+author+"  出版社："+publisher+"  价格："+price;
+    }
+}
+```
+
+```java
+public class BookTest {
+    public static void main(String[] args) {
+        Book book = new Book();
+        book.setBookName("JAVA编程思想");
+        book.setAuthor("Bruce Eckel");
+        book.setPrice(80);
+        book.setPublisher("机械工业出版社");
+        System.out.println(book.bookInfo());    //书名：JAVA编程思想  作者：Bruce Eckel  出版社：机械工业出版社  价格：80.0
+    }
+}
+```
 
 
+
+
+
+#### 类成员：构造器（Constructor）
+
+new对象，并在new对象的时候为实例变量赋值。
+
+```java
+[修饰符] class 类名{ 
+  		[修饰符] 构造器名(){
+					// 实例初始化代码 }
+			[修饰符] 构造器名(参数列表){ // 实例初始化代码
+			} 
+}
+```
+
+- 构造器名必须与它所在的类名同名
+- 它没有返回值，所以不需要返回值类型，也不需要void。
+- 构造器的修饰符只能是权限修饰符，不能被其他任何修饰符。如static、final、synchronized、abstract、native修饰，不能使用return语句。
+- 当我们没有显示的声明类中的构造器时，Java会默认提供一个无参的构造器并且该构造器的修饰符默认与类名相同。
+- 当我们显示定义类的构造器时，Java就不再提供默认的无参构造器。
+- 在类中至少会存在一个构造器；构造器是可以重载的。
+
+```java
+public class Student {
+    private String name;
+    private int age;
+    public Student(){   //无参构造器
+      
+    }
+    public Student(String n,int a){ //构造器重载
+        name = n;
+        age = a;
+    }
+    public String studentInfo(){
+        return "姓名："+name+"  年龄："+age;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+
+```java
+public class StudentTest {
+    public static void main(String[] args) {
+        Student stu = new Student();
+        stu.setName("tom");
+        stu.setAge(23);
+        Student stu2 = new Student("jerry",20);
+        System.out.println(stu.studentInfo());  //姓名：tom  年龄：23
+        System.out.println(stu2.studentInfo()); //姓名：jerry  年龄：20
+    }
+}
+```
+
+##### 练习：
+
+- 写一个名为Account的类模拟账户。该类的属性和方法如下图所示。 该类包括的属性:账号id，余额balance，年利率annualInterestRate; 包含的方法:访问器方法(getter和setter方法)，取款方法withdraw()，存款方法deposit()。
+
+- 创建Customer类。
+
+```java
+public class Account {
+    private int id;
+    private double balance;
+    private double annuallnterestRate;
+    public Account(int i, double b, double a) {
+        id = i;
+        balance = b;
+        annuallnterestRate = a;
+    }
+    public void withdraw(double amount) {
+        if (amount <= balance && amount > 0) {
+            balance -= amount;
+            System.out.println("成功取款："+amount);
+        } else {
+            System.out.println("余额不足");
+        }
+    }
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            System.out.println("成功存入：" + amount);
+        }else {
+            System.out.println("非法输入");
+        }
+    }
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public double getBalance() {
+        return balance;
+    }
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+    public double getAnnuallnterestRate() {
+        return annuallnterestRate;
+    }
+    public void setAnnuallnterestRate(double annuallnterestRate) {
+        this.annuallnterestRate = annuallnterestRate;
+    }
+}
+```
+
+```java
+public class Customer {
+    private String firstName;
+    private String lastName;
+    private Account account;
+    public Customer(String fn, String ln) {
+        firstName = fn;
+        lastName = ln;
+    }
+    public String customerInfo(){
+        return "姓名："+lastName+" "+firstName+"  账号："+account.getId()+
+                "  余额："+account.getBalance()+"  年利率："
+                +account.getAnnuallnterestRate()*100+"%";
+    }
+    public String getFirstName() {
+        return firstName;
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    public Account getAccount() {
+        return account;
+    }
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+}
+```
+
+```java
+public class CustomerTest {
+    public static void main(String[] args) {
+        Customer customer = new Customer("Smith","jane");
+        customer.setAccount(new Account(1024,2000,0.023));
+        customer.getAccount().deposit(2000);    //成功存入：2000.0
+        customer.getAccount().withdraw(500);    //成功取款：500.0
+        customer.getAccount().withdraw(10000);  //余额不足
+        System.out.println(customer.customerInfo()); 
+    }
+}
+```
+
+#### JavaBean
+
+- JavaBean是一种Java语言写成的可重用组件。
+- JavaBean，是指符合如下标准的Java类：
+  - 类是公共的。
+  - 有一个无参的公共构造器
+  - 有属性，且有对应的get、set方法
+- 用户可以使用JavaBean将功能、处理、值、数据库访问和其他任何可以用Java代码创造的对象进行打包，并且其他的开发者可以通过内部的JSP页面、Servlet、其他JavaBean、applet程序或者应用来使用这些对象。
+- 《Think in Java》中提到，JavaBean最初是为Java GUI的可视化编程实现的。你拖动IDE构建工具创建一个GUI组件，其实是工具给你创建Java类，并提供将类的属性暴露出来给你修改调整，将事件监听暴露出来。
+
+```java
+public class JavaBean {
+    private String name;
+    private int age;
+    public JavaBean(){
+
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+
+#### UML类图
+
+- UML（Unified Modeling Language）统一建模语言，用来描述软件模型和架构的图形化语言。
+- 常用的UML工具有：PowerDesinger、Rose和Enterprise Architect。
+- UML工具不仅可以绘制团建开发中所需的各种图表，还可以生成对应的源代码。
+- 在软件开发中，使用UML类图可以更加直观地描述类内部结构（类的属性和操作）以及类之间的关系（如关联、依赖、聚合等）。
+  - +表示 public 类型，-表示private类型，#表示protected类型
+  - 方法的写法：方法的类型(+、-)方法名（参数名：参数类型）：返回值类型
+  - 斜体表示抽象方法或类。
