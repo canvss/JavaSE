@@ -83,7 +83,7 @@
 
 **Java的基本数据类型的存储范围**
 
-![基本数据类型范围](imgs/基本数据类型范围.png)
+![基本数据类型范围](imgs/ajsabsa.png)
 
 float：单精度浮点型，占内存：4个字节，精度：科学计数法小数点后6-7位
 
@@ -189,7 +189,7 @@ public class com.canvs.basic.syntax.FinalVariableDemo {
 
 - 将**取值范围小的类型**自动提升为**取值范围大的类型**
 
-![自动类型转换图1](imgs/自动类型转换图1.png)
+![自动类型转换图1](imgs/asdadsdd.png)
 
 ```java 
 int i = 'A';
