@@ -323,11 +323,11 @@ public class com.canvs.basic.syntax.OperatorDemo2 {
 | 逻辑运算符 |   符号解释   |               符号特点               |
 | :--------: | :----------: | :----------------------------------: |
 |    `&`     |    与，且    |          有`false`则`false`          |
-|    `|`     |      或      |           有`true`则`true`           |
+|     \|     |      或      |           有`true`则`true`           |
 |    `^`     |     异或     |     相同为`false`，不同为`true`      |
 |    `!`     |      非      | 非`false`则`true`，非`true`则`false` |
 |    `&&`    | 双与，短路与 |      左边为false，则右边就不看       |
-|    `||`    | 双或，短路或 |       左边为true，则右边就不看       |
+|    \|\|    | 双或，短路或 |       左边为true，则右边就不看       |
 
 ```java
 public class com.canvs.basic.syntax.OperatorDemo3 {
