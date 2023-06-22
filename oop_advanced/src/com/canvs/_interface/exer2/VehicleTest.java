@@ -1,7 +1,5 @@
 package com.canvs._interface.exer2;
 
-import com.sun.media.jfxmedia.events.NewFrameEvent;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/22 00:01
