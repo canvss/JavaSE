@@ -1,4 +1,4 @@
-package com.canvs.create.lifecycle;
+package com.canvs.lifecycle;
 
 /**
  * _*_ coding: utf-8 _*_

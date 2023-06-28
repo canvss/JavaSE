@@ -1,6 +1,4 @@
-package com.canvs.create.runnablesafe;
-
-import sun.security.provider.ConfigFile;
+package com.canvs.runnablesafe;
 
 /**
  * _*_ coding: utf-8 _*_

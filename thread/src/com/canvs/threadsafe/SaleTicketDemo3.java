@@ -1,4 +1,4 @@
-package com.canvs.create.threadsafe;
+package com.canvs.threadsafe;
 
 /**
  * _*_ coding: utf-8 _*_

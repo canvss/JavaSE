@@ -1,4 +1,4 @@
-package com.canvs.create.runnablesafe;
+package com.canvs.runnablesafe;
 
 /**
  * _*_ coding: utf-8 _*_
