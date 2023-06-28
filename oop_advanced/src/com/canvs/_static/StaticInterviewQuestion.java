@@ -1,4 +1,4 @@
-package com.canvs._static.singleton;
+package com.canvs._static;
 
 /**
  * _*_ coding: utf-8 _*_
@@ -6,9 +6,11 @@ package com.canvs._static.singleton;
  */
 public class StaticInterviewQuestion {
     public static void main(String[] args) {
-        Demo d = null;
-        System.out.println(d.getClass());
+        Demo d = new Demo();
+        d = null;
+        Demo c = null;
         d.hello();  //hello!
+        c.hello();  //hello!
     }
 }
 class Demo{

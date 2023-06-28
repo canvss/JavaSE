@@ -1,4 +1,4 @@
-package com.canvs._static.exer;
+package com.canvs._static.singleton;
 
 /**
  * _*_ coding: utf-8 _*_
