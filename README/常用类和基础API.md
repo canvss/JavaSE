@@ -565,7 +565,7 @@ public class StringBufferTest {
 
 #### 继承结构
 
-<img src="imgs/AbstractStringBuilder.png" align="middle" />
+<img src="imgs/AbstractStringBuilder.png"/>
 
 #### StringBuffer与StringBuilder区别
 
@@ -712,10 +712,3 @@ public class InterviewQuestion {
     }
 }
 ```
-
-
-
-
-
-
-
