@@ -712,3 +712,592 @@ public class InterviewQuestion {
     }
 }
 ```
+
+### JDK8之前：日期时间API
+
+#### java.lang.System类方法
+
+- System类提供的`public static native long currentTimeMillis();`：用于返回当前时间与1970年1月1日0时0分0秒之间以毫秒为单位的时间戳
+
+- 计算世界时间的主要标准：
+
+  - UTC(Coordinated Universal Time)
+  - GMT(Greenwich Mean Time)
+  - CST(Central Standard Time)
+
+  > 在国际无线电通信场合，为统一起见，使用一个统一的时间，称为通用协调时（UTC, Universal Time Coordinated）。UTC与格林尼治平均时(GMT, Greenwich Mean Time)一样，都与英国伦敦的本地时相同。这里，UTC与GMT含义完全相同。 
+
+```java
+  public void test02(){
+        long timemillis = System.currentTimeMillis();   //获取当前时间戳ms
+        System.out.println(timemillis);
+    }
+```
+
+#### java.util.Date
+
+表示特定的瞬间，精确到毫秒
+
+- 构造器：
+  - Date()：使用无参构造器创建的对象可以获取本地当前时间
+  - Date(long 时间戳)：把该时间戳值换算成日期时间对象
+- 常用方法
+  - getTime()： 返回自 1970 年 1 月 1 日 00:00:00 GMT 以来此 Date 对象表示的毫秒数。
+  - toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy 其中： dow 是一周中的某一天 (Sun, Mon, Tue, Wed, Thu, Fri, Sat)，zzz是时间标准。
+
+```java
+    public void test01(){
+        Date now = new Date();
+        System.out.println(now);    //Sat Jul 01 15:27:41 CST 2023
+        System.out.println(now.getTime()); //获取当前时间戳
+        Date dateTime = new Date(1358196487047L);
+        System.out.println(dateTime); //Tue Jan 15 04:48:07 CST 2013
+    }
+```
+
+#### java.text.SimpleDateFormat
+
+- java.text.SimpleDateFormat类是一个不与语言环境有关的方式来格式化和解析日期的具体类
+- 可以进行格式化：日期 -->文本
+- 可以解析：文本-->日期
+- 构造器：
+  - SimpleDateFormat()：默认的模式和语言环境创建对象
+  - SimpleDateFormat(String pattern)：可以用参数pattern指定的格式创建一个对象
+- 格式化：
+  - public String format(Date date)：方法格式化时间对象date
+- 解析：
+  - public Date parse(String source)：从给定字符串的开始解析文本，以生成一个日期。
+
+```java
+ public void test03() throws ParseException {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String strDate = sdf.format(date);
+        System.out.println(strDate);    //2023-07-01 15:33:49
+        Date date1 = sdf.parse("2020-12-11 10:05:33");	//解析文本日期
+        System.out.println(date1);  //Fri Dec 11 10:05:33 CST 2020
+    }
+```
+
+#### java.util.Calendar（日历）
+
+- Date类的API大部分被废弃，替换Calendar
+- `Calendar`类是一个抽象类，主要用于完成日期字段之间相互操作的功能
+- 获取Calendar实例的方法
+  - Calendar.getInstance()方法
+  - 调用它的子类GregorianCalendar的构造器
+- 一个Calendar的实例是系统时间的抽象表示，可以修改或获取YEAR、MONTH、DAY_OF_WEEK、HOUR_OF_DAY、MINUTE、SECOND等日历字段对应的时间值。
+  - public int get(int field)：返回给定日历字段的值
+  - public void set(int field, int value)：将给定的日历字段设置为指定的值
+  - public void add(int field, int amount)：根据日历的规则，为给定的日历字段添加或减去指定的时间量
+  - public final Date getTime()：将Calendar转成Date对象
+  - public final void setTime(Date date)：使用指定的Date对象重置Calendar的时间
+- 常用字段
+
+| 字段值       | 含义                      |
+| ------------ | ------------------------- |
+| YEAR         | 年                        |
+| MONTH        | 月（从0开始，可以+1使用） |
+| DAY_OF_MONTH | 月中的天（几号）          |
+| HOUR         | 时（12小时制）            |
+| HOUR_OF_DAY  | 时（24小时制度）          |
+| MINUTE       | 分                        |
+| SECOND       | 秒                        |
+| DAY_OF_WEEK  | 周中的天（周日为1）       |
+
+- 注意：
+  - 获取月份时：一月是0，二月是1
+  - 获取星期时：周日是1，周二是2
+
+```java
+public class CalendarTest {
+    @Test
+    public void test01(){
+        Calendar calendar = Calendar.getInstance();
+        System.out.println(calendar.get(Calendar.YEAR)+"-"+
+                calendar.get(Calendar.MONTH)+"-"+calendar.get(Calendar.DATE)+
+                " "+calendar.get(Calendar.HOUR)+":"+calendar.get(Calendar.MINUTE)+
+                ":"+calendar.get(Calendar.SECOND)); //2023-6-1 3:52:34;月份从0-11
+    }
+    @Test
+    public void test02(){
+        TimeZone tz = TimeZone.getTimeZone("America/Los_Angeles");  //设置时区
+//        Calendar calendar = Calendar.getInstance(tz);
+        Calendar calendar = new GregorianCalendar(tz);
+        System.out.println(calendar.get(Calendar.YEAR)+"-"+
+                calendar.get(Calendar.MONTH)+"-"+calendar.get(Calendar.DATE)+
+                " "+calendar.get(Calendar.HOUR)+":"+calendar.get(Calendar.MINUTE)+
+                ":"+calendar.get(Calendar.SECOND)); //2023-6-1 0:49:14
+    }
+    @Test
+    public void test03(){
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        System.out.println(date); //Sat Jul 01 15:54:41 CST 2023
+        calendar.setTime(new Date(1358196487047L));
+        System.out.println(calendar.getTime()); //Tue Jan 15 04:48:07 CST 2013
+        calendar.set(Calendar.DAY_OF_MONTH,8);
+        System.out.println(calendar.getTime()); //Tue Jan 08 04:48:07 CST 2013
+        calendar.add(Calendar.HOUR,10);
+        System.out.println(calendar.getTime()); //Tue Jan 08 14:48:07 CST 2013
+        calendar.add(Calendar.HOUR,-2);
+        System.out.println(calendar.getTime()); //Tue Jan 08 12:48:07 CST 2013
+    }
+}
+```
+
+### JKD8:新的日期时间API
+
+- 可变性：像日期和时间这样的类应该是不可变的
+- 偏移性：Date中的年份是从1990年开始的，而月份是从0开始的
+- 格式化：格式化只对Date有用，Calendar则不行。
+- 此外，它们也不是线程安全的；不能处理闰秒等。
+
+> 闰秒，是指为保持协调世界时接近于世界时时刻，由国际计量局统一规定在年底或年中（也可能在季末）对协调世界时增加或减少1秒的调整。由于地球自转的不均匀性和长期变慢性（主要由潮汐摩擦引起的），会使世界时（民用时）和原子时之间相差超过到±0.9秒时，就把协调世界时向前拨1秒（负闰秒，最后一分钟为59秒）或向后拨1秒（正闰秒，最后一分钟为61秒）； 闰秒一般加在公历年末或公历六月末。
+>
+> 目前，全球已经进行了27次闰秒，均为正闰秒。
+
+#### Java 8中引入java.time API 
+
+- `java.time` – 包含值对象的基础包
+- `java.time.chrono` – 提供对不同的日历系统的访问。
+- `java.time.format` – 格式化和解析时间和日期
+- `java.time.temporal` – 包括底层框架和扩展特性
+- `java.time.zone` – 包含时区支持的类
+
+>说明：新的 java.time 中包含了所有关于时钟（Clock），本地日期（LocalDate）、本地时间（LocalTime）、本地日期时间（LocalDateTime）、时区（ZonedDateTime）和持续时间（Duration）的类。
+
+#### 本地日期时间：LocalDate、LocalTime、LocalDateTime
+
+| 方法                                                         | **描述**                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `now() `/ now(ZoneId zone)                                   | 静态方法，根据当前时间创建对象/指定时区的对象                |
+| `of(xx,xx,xx,xx,xx,xxx)`                                     | 静态方法，根据指定日期/时间创建对象                          |
+| getDayOfMonth()/getDayOfYear()                               | 获得月份天数(1-31) /获得年份天数(1-366)                      |
+| getDayOfWeek()                                               | 获得星期几(返回一个 DayOfWeek 枚举值)                        |
+| getMonth()                                                   | 获得月份, 返回一个 Month 枚举值                              |
+| getMonthValue() / getYear()                                  | 获得月份(1-12) /获得年份                                     |
+| getHours()/getMinute()/getSecond()                           | 获得当前对象对应的小时、分钟、秒                             |
+| withDayOfMonth()/withDayOfYear()/withMonth()/withYear()      | 将月份天数、年份天数、月份、年份修改为指定的值并返回新的对象 |
+| with(TemporalAdjuster  t)                                    | 将当前日期时间设置为校对器指定的日期时间                     |
+| plusDays(), plusWeeks(), plusMonths(), plusYears(),plusHours() | 向当前对象添加几天、几周、几个月、几年、几小时               |
+| minusMonths() / minusWeeks()/minusDays()/minusYears()/minusHours() | 从当前对象减去几月、几周、几天、几年、几小时                 |
+| plus(TemporalAmount t)/minus(TemporalAmount t)               | 添加或减少一个 Duration 或 Period                            |
+| isBefore()/isAfter()                                         | 比较两个 LocalDate                                           |
+| isLeapYear()                                                 | 判断是否是闰年（在LocalDate类中声明）                        |
+| format(DateTimeFormatter  t)                                 | 格式化本地日期、时间，返回一个字符串                         |
+| parse(Charsequence text)                                     | 将指定格式的字符串解析为日期、时间                           |
+
+```java
+public class LocalDateTimeTest {
+    @Test
+    public void test01(){
+        LocalDate date = LocalDate.now();
+        System.out.println(date);   //2023-07-01
+        date = LocalDate.of(2022,12,1);
+        System.out.println(date);   //2022-12-01
+    }
+    @Test
+    public void test02(){
+        LocalTime time = LocalTime.now();
+        System.out.println(time);   //16:26:28.343
+        time = LocalTime.of(00,20,34);
+        System.out.println(time);   //00:20:34
+    }
+    @Test
+    public void test03(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        System.out.println(dateTime); //2023-07-01T16:27:14.465
+        dateTime = LocalDateTime.of(2012,12,20,12,20,34);
+        System.out.println(dateTime);   //2012-12-20T12:20:34
+      	System.out.println(dateTime.getYear()+"/"
+                         +dateTime.getMonthValue()+"/"+dateTime.getDayOfMonth());
+        dateTime = dateTime.plusDays(10);
+        System.out.println(dateTime);   //2012-12-30T12:20:34
+    }
+}
+```
+
+#### 瞬时：Instant
+
+- Instant：时间线上的一个瞬间点。可能被用来记录应用程序中的事件时间戳。
+- `java.time.Instant`表示时间线上的一点，而不需要任何上下文信息，例如，时区。概念上讲，`它只是简单的表示自1970年1月1日0时0分0秒（UTC）开始的秒数。`
+
+| **方法**                        | **描述**                                                     |
+| ------------------------------- | ------------------------------------------------------------ |
+| `now()`                         | 静态方法，返回默认UTC时区的Instant类的对象                   |
+| `ofEpochMilli(long epochMilli)` | 静态方法，返回在1970-01-01 00:00:00基础上加上指定毫秒数之后的Instant类的对象 |
+| atOffset(ZoneOffset offset)     | 结合即时的偏移来创建一个 OffsetDateTime                      |
+| `toEpochMilli()`                | 返回1970-01-01 00:00:00到当前时间的毫秒数，即为时间戳        |
+
+#### 日期时间格式化：DateTimeFormatter
+
+该类提供了三种格式化方法：
+
+- 预定义的标准格式：如：ISO_LOCAL_DATE_TIME、ISO_LOCAL_DATE、ISO_LOCAL_TIME
+- 本地化相关的格式：如：ofLocalizedDate(FormatStyle.LONG)
+- 自定义的格式：ofPattern(“yyyy-MM-dd hh:mm:ss”)
+
+| **方**   **法**                    | **描**   **述**                                     |
+| ---------------------------------- | --------------------------------------------------- |
+| **ofPattern(String**  **pattern)** | 静态方法，返回一个指定字符串格式的DateTimeFormatter |
+| **format(TemporalAccessor** **t)** | 格式化一个日期、时间，返回字符串                    |
+| **parse(CharSequence**  **text)**  | 将指定格式的字符序列解析为一个日期、时间            |
+
+```java
+public class DateTimeFormatterTest {
+    @Test
+    public void test01(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        //日期转为字符串
+        String str = dateTime.format(formatter);
+        System.out.println(str);   //2023-07-01T16:43:02.455
+        //字符串转为日期
+        TemporalAccessor parse = formatter.parse(str);
+        LocalDateTime dateTime1 = LocalDateTime.from(parse);
+        System.out.println(dateTime1);  //2023-07-01T16:49:10.529
+    }
+    @Test
+    public void test02(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        //格式化
+        String date = dateTime.format(formatter);
+        System.out.println(date); //2023/07/01 16:53:36
+        //解析
+        TemporalAccessor parse = formatter.parse(date);
+        dateTime = LocalDateTime.from(parse);
+        System.out.println(dateTime);
+    }
+}
+```
+
+### Java比较器
+
+基本数据类型的数据（除boolean类型外）需要比较大小的话，之间使用比较运算符即可，但是引用数据类型是不能直接使用比较运算符来比较大小的。
+
+Java实现对象排序的方式：
+
+- 自然排序：java.lang.Comparable
+- 定制排序：java.util.Comparator
+
+#### 自然排序：java.lang.Comparable
+
+- Comparable接口强行对实现它的每个类的对象进行整体排序。这种排序被称为类的自然排序。
+- 实现Comparable的类必须实现`compareTo(Object obj)`方法，两个对象即通过compareTo(Object obj)方法的返回值来比较大小。如果当前对象this大于形参列表对象obj，则返回正整数，如果当前对象this小于形参对象obj，则返回负整数，如果当前对象this等于形参对象obj，则返回0；
+
+```java
+package java.lang;
+public interface Comparable{
+    int compareTo(Object obj);
+}
+```
+
+- 实现Comparable接口的对象列表（和数组）可以通过Collections.sort或Arrays.sort进行自然排序。实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。
+- 对于类C的每一个e1和e2来说，当且仅当e1.compareTo(e2)==0与e1.equals(e2)具有相同的boolean值时，类C的自然排序才叫做与equals一致。建议最好使自然排序与equals一致。
+- Comparable的典型实现：
+  - String：按照字符串中字符的Unicode值进行比较
+  - Character：按照字符的Unicode值来进行比较
+  - 数值类型对应的包装类以及BigInteger、BigDecimal：按照它们对应的数值大小进行比较
+  - Boolean：true 对应的包装类实例大于 false 对应的包装类实例
+  - Date、Time等：后面的日期时间比前面的日期时间大
+
+```java
+public class Student implements Comparable {
+    String name;
+    int age;
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    @Override
+    public int compareTo(Object o) {
+        if (this == o) return 0;
+        if (o instanceof Student){
+            return this.age - ((Student) o).age;
+        }
+        throw new RuntimeException("类型有误！");
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o instanceof Student){
+            Student stu = (Student) o;
+            return stu.age==age&&stu.name.equals(name);
+        }
+        return false;
+    }
+    @Override
+    public String toString() {
+        return "Student{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+    public static void main(String[] args) {
+        Student[] students = new Student[5];
+        students[0] = new Student("jack",25);
+        students[1] = new Student("Tom",12);
+        students[2] = new Student("jerry",17);
+        students[3] = new Student("lisa",30);
+        students[4] = new Student("canvs",15);
+        Arrays.sort(students);	//按照年龄排序
+        for (int i = 0; i < students.length; i++) {
+            System.out.println(students[i]);
+        }
+    }
+}
+```
+
+#### 定制排序：java.util.Comparator
+
+- 重写compare(Object o1,Object o2)方法，比较o1和o2的大小：如果方法返回正整数，则表示o1大于o2；如果返回0，则相等；返回负数，表示o1小于o2.
+- 可以将Comparator传递给sort方法（如Collections.sort或者Arrays.sort），从而允许在排序顺序上实现精确控制。
+
+```java
+package java.util;
+
+public interface Comparator{
+    int compare(Object o1,Object o2);
+}
+```
+
+```java
+public class Product implements Comparable{
+    String name;
+    double price;
+    public Product(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+    @Override
+    public String toString() {
+        return "Product{" +
+                "Name='" + name + '\'' +
+                ", price=" + price +
+                '}';
+    }
+    @Override
+    public int compareTo(Object o) {
+        if (o==this) return 0;
+        if (o instanceof Product){
+            if (this.price>((Product) o).price) return 1;
+            if (this.price<((Product) o).price) return -1;
+            return this.name.compareTo(((Product) o).name);
+        }
+        throw new RuntimeException("类型有误！");
+    }
+    public static void main(String[] args) {
+        Product[] products = new Product[4];
+        products[0] = new Product("iphon14pro",5999);
+        products[1] = new Product("xiaomi",3999);
+        products[2] = new Product("huawei",3999);
+        products[3] = new Product("redmi",1999);
+        Arrays.sort(products, new Comparator<Product>() {
+            @Override
+            public int compare(Product o1, Product o2) {
+                if (o1==o2) return 0;
+                if (o1 != null && o2 != null){
+                    if (o1.price > o2.price) return 1;
+                    if (o1.price < o2.price) return -1;
+                    return o1.name.compareTo(o2.name);
+                }
+                throw new RuntimeException("类型有误！");
+            }
+        });
+        for (int i = 0; i < products.length; i++) {
+            System.out.println(products[i]);
+        }
+    }
+}
+```
+
+### 系统相关类
+
+#### java.lang.System类
+
+- System类代表系统，系统级的很多属性和控制方法都放置在该类的内部。该类位于`java.lang包`。
+- 由于该类的构造器是private的，所以无法创建该类的对象。其内部的成员变量和成员方法都是`static的`，所以也可以很方便的进行调用。
+
+- 成员变量   Scanner scan = new Scanner(System.in);
+
+  - System类内部包含`in`、`out`和`err`三个成员变量，分别代表标准输入流(键盘输入)，标准输出流(显示器)和标准错误输出流(显示器)。
+
+- 成员方法
+
+  - `native long currentTimeMillis()`：
+    该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。
+
+  - `void exit(int status)`：
+    该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。
+
+  - `void gc()`：
+    该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则取决于系统中垃圾回收算法的实现以及系统执行时的情况。
+
+  - `String getProperty(String key)`：
+    该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示：
+
+| 属性名       | 属性说明           |
+| ------------ | ------------------ |
+| java.version | Java运行时环境版本 |
+| java.home    | Java安装目录       |
+| os.name      | 操作系统的名称     |
+| os.version   | 操作系统的版本     |
+| user.name    | 用户的账户名称     |
+| user.home    | 用户的主目录       |
+| user.dir     | 用户的当前工作目录 |
+
+```java
+public class SystemTest {
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println("Java运行版本：" + System.getProperty("java.version"));
+        System.out.println("Java安装目录：" + System.getProperty("java.home"));
+        System.out.println("操作系统的名称："+ System.getProperty("os.name"));
+        System.out.println("操作系统的版本："+ System.getProperty("os.version"));
+        System.out.println("用户的账户名称："+System.getProperty("user.name"));
+        System.out.println("用户的主目录："+System.getProperty("user.home"));
+        System.out.println("用户的当前工作目录："+System.getProperty("user.dir"));
+        System.gc();
+        test();
+        System.out.println("over!");    //不会执行
+    }
+    public static void test() throws InterruptedException {
+        for (int i = 0; i < 10 ; i++) {
+            SystemTest test = new SystemTest();
+        }
+        System.gc();
+        Thread.sleep(5000);
+    }
+    @Override
+    protected void finalize() throws Throwable {
+        System.out.println(this + "：被GC回收了!");
+    }
+}
+```
+
+#### java.lang.Runtime类
+
+每个Java应用程序都有一个`Runtime`类实例，使应用能够与其他运行的环境相连接。
+
+- `public static Runtime getRuntime()`：返回与当前Java应用程序相关的运行时对象。应用程序不能创建自己的Runtime类实例。
+- `public long totalMemory()`：返回Java虚拟机中初始化时的内存总量。此方法返回的值可能随时间的推移而变化，取决于主机环境。默认为物理电脑内存的1/64。
+- `public long maxMemory()`：返回Java虚拟机中最大程度能使用的内存总量。默认为物理电脑内存的1/4。
+- `public long freeMemory()`：返回Java虚拟机中的空闲内存量。调用gc方法可能导致freeMemory返回值的增加
+
+```java
+public class RuntimeTest {
+    public static void main(String[] args) {
+        Runtime runtime = Runtime.getRuntime();
+        System.out.println(runtime.totalMemory() / 1024 / 1024 + "MB");
+        System.out.println(runtime.maxMemory()/1024/1024+"MB");
+        String s = "";
+        for (int i = 0; i < 10000; i++) {
+            s += i;
+        }
+        System.out.println(runtime.freeMemory() / 1024 / 1024 + "MB");
+    }
+}
+```
+
+- `static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`： 
+
+  从指定源数组中复制一个数组，复制从指定的位置开始，到目标数组的指定位置结束。常用于数组的插入和删除
+
+```java
+
+```
+
+### 和数学相关的类
+
+#### java.lang.Math
+
+`java.lang.Math` 类包含用于执行基本数学运算的方法，如初等指数、对数、平方根和三角函数。类似这样的工具类，其所有方法均为静态方法，并且不会创建对象，调用起来非常简单。
+
+* `public static double abs(double a) ` ：返回 double 值的绝对值。 
+
+```java
+	public void test01(){
+        double d1 = Math.abs(-5);
+        System.out.println(d1); //5.0
+        System.out.println(Math.abs(5));    //5
+    }
+```
+
+* `public static double ceil(double a)` ：返回大于等于参数的最小的整数。
+
+```java
+	public void test02(){
+        System.out.println(Math.ceil(3.3)); //4.0
+        System.out.println(Math.ceil(-3.3)); //-3.0
+        System.out.println(Math.ceil(5.1)); //6.0
+    }
+```
+
+* `public static double floor(double a) ` ：返回小于等于参数最大的整数。
+
+```java
+    public  void test03(){
+        System.out.println(Math.floor(3.3));    //3.0
+        System.out.println(Math.floor(-3.3));   //-4.0
+        System.out.println(Math.floor(5.1));    //5.0
+    }
+```
+
+* `public static long round(double a)` ：返回最接近参数的 long。(相当于四舍五入方法)  
+
+```java
+    public void test04(){
+        System.out.println(Math.round(5.5));    //6
+        System.out.println(Math.round(5.4));    //5
+        System.out.println(Math.round(-3.3));   //-3
+        System.out.println(Math.round(-3.8));   // -4
+    }
+```
+
+* public static double pow(double a,double b)：返回a的b幂次方法
+* public static double sqrt(double a)：返回a的平方根
+* `public static double random()`：返回[0,1)的随机值
+* public static final double PI：返回圆周率
+* public static double max(double x, double y)：返回x,y中的最大值
+* public static double min(double x, double y)：返回x,y中的最小值
+* 其它：acos,asin,atan,cos,sin,tan 三角函数
+
+```java
+    public void test05(){
+        System.out.println(Math.pow(2,31)); //2.147483648E9
+        System.out.println(Math.sqrt(256)); //16.0
+        System.out.println(Math.random());
+        System.out.println(Math.PI);
+    }
+```
+
+#### java.util.Random
+
+用于产生随机数
+
+* `boolean nextBoolean()`:返回下一个伪随机数，它是取自此随机数生成器序列的均匀分布的 boolean 值。 
+
+* `void nextBytes(byte[] bytes)`:生成随机字节并将其置于用户提供的 byte 数组中。 
+
+* `double nextDouble()`:返回下一个伪随机数，它是取自此随机数生成器序列的、在 0.0 和 1.0 之间均匀分布的 double 值。 
+
+* `float nextFloat()`:返回下一个伪随机数，它是取自此随机数生成器序列的、在 0.0 和 1.0 之间均匀分布的 float 值。 
+
+* `double nextGaussian()`:返回下一个伪随机数，它是取自此随机数生成器序列的、呈高斯（“正态”）分布的 double 值，其平均值是 0.0，标准差是 1.0。 
+
+* `int nextInt()`:返回下一个伪随机数，它是此随机数生成器的序列中均匀分布的 int 值。 
+
+* `int nextInt(int n)`:返回一个伪随机数，它是取自此随机数生成器序列的、在 0（包括）和指定值（不包括）之间均匀分布的 int 值。 
+
+* `long nextLong()`:返回下一个伪随机数，它是取自此随机数生成器序列的均匀分布的 long 值。 
+
+```java
+public class RandomTest {
+    public static void main(String[] args) {
+        Random random = new Random();
+        System.out.println(random.nextInt(11)); //0-11的随机数
+    }
+}
+```
+
