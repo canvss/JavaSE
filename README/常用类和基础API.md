@@ -1203,9 +1203,53 @@ public class RuntimeTest {
 - `static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`： 
 
   从指定源数组中复制一个数组，复制从指定的位置开始，到目标数组的指定位置结束。常用于数组的插入和删除
+  
+  | 参数        | 参数说明           |
+  | ----------- | ------------------ |
+  | Object src  | 源对象             |
+  | int srcPos  | 原数组起始位置     |
+  | Object dest | 目标对象数组       |
+  | int destPos | 目标数组起始位置   |
+  | int length  | 要拷贝数组元素数量 |
 
 ```java
-
+public class ArrayCopyTest {
+    @Test
+    public void test1(){
+        int[] i = {1,2,3,4,5,6,7,8,9};
+        int[] j;
+        j = Arrays.copyOf(i,i.length);  //使用Arrays.copyOf拷贝数组
+        for (int value : j) {
+            System.out.println(value);
+        }
+    }
+    @Test
+    public void test02(){
+        int[] i = {1,2,3,4,5,6,7,8,9};
+        int[] j = new int[i.length];
+        System.arraycopy(i,0,j,0,i.length); 
+        for (int value : j) {
+            System.out.println(value);
+        }
+    }
+    @Test
+    public void test03(){
+        int[] i = {1,2,3,4,5,6,7,8,9};
+        int[] y = new int[5];
+        System.arraycopy(i,3,y,0,y.length); //指定位置到指定范围的拷贝
+        for (int k = 0; k < y.length; k++) {
+            System.out.println(y[k]);
+        }
+    }
+    @Test
+    public void test04(){
+        int[] i = {1,2,3,4,5,6,7,8,9};
+        System.arraycopy(i,2,i,1,5);    //删除第二个元素
+        for (int j = 0; j < i.length; j++) {
+            System.out.println(i[j]);
+        }
+    }
+}
 ```
 
 ### 和数学相关的类
