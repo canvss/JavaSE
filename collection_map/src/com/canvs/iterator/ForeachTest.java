@@ -1,4 +1,4 @@
-package com.canvs.collection;
+package com.canvs.iterator;
 
 import org.junit.Test;
 

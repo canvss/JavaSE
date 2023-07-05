@@ -1,4 +1,4 @@
-package com.canvs.collection;
+package com.canvs.iterator;
 
 /**
  * _*_ coding: utf-8 _*_
