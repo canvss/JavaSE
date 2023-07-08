@@ -86,4 +86,58 @@ public class CollectionsTest {
         });
         System.out.println(max);
     }
+    @Test
+    public void testBinarySearch(){
+        List list = new ArrayList();
+        list.add(new Book("Java编程思想", 76.5));
+        list.add(new Book("鸟哥Linux私房菜", 98));
+        list.add(new Book("算法第四版", 69.4));
+        list.add(new Book("深入理解Java虚拟机", 85.1));
+        Collections.sort(list);
+        System.out.println(list);
+        int i = Collections.binarySearch(list, new Book("算法第四版", 69.4));
+        System.out.println(i);
+    }
+    @Test
+    public void testFrequency(){
+        List list = Arrays.asList(1,2,3,4,4,3,5,1,1,4,2,4);
+        System.out.println(Collections.frequency(list, 1));
+    }
+    @Test
+    public void testCopy(){
+        List src = Arrays.asList("A","B","C","D","E","F");
+        //List src = new ArrayList(); //src长度为0所以copy不了
+        List dest = Arrays.asList(new String[src.size()]);
+        Collections.copy(dest,src);
+        System.out.println(src);
+    }
+    @Test
+    public void testReplaceAll(){
+        List src = Arrays.asList("A","B","C","D","E","A","B","A");
+        //将A替换成a
+        Collections.replaceAll(src,"A","a");
+        System.out.println(src);
+    }
+    @Test
+    public void testAddAll(){
+        List list = new ArrayList();
+        Collections.addAll(list,"A","B","C","D");
+        System.out.println(list);
+    }
+    @Test
+    public void testUnmodifiable(){
+        List list = Arrays.asList("A","B","C","D","E","A","B","A");
+        list = Collections.unmodifiableList(list);
+        list.add("G");  //UnsupportedOperationException
+        Set set = new HashSet();
+        Collections.addAll(set,"A","B","C","D","E");
+        set = Collections.unmodifiableSet(set);
+        set.remove("A");
+    }
+    @Test
+    public void testSynchronized(){
+        Set set = new TreeSet();
+        //set是线程是安全的
+        set = Collections.synchronizedSet(set);
+    }
 }
