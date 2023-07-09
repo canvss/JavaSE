@@ -1,7 +1,6 @@
 package com.canvs.list.exer2;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 

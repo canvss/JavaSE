@@ -5,8 +5,6 @@ import com.canvs.project.service.NameListService;
 import com.canvs.project.service.TeamException;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/26 16:19

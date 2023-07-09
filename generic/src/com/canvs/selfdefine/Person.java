@@ -10,6 +10,7 @@ public class Person <T>{
     public Person(T info) {
         this.info = info;
     }
+    public Person(){}
 
     public T getInfo() {
         return info;
@@ -18,4 +19,15 @@ public class Person <T>{
     public void setInfo(T info) {
         this.info = info;
     }
+//    静态方法中不能声明泛型
+//    public static void test(T t){
+//    }
+//    不能try...catch中定义泛型
+//    public void test(){
+//        try {
+//
+//        }catch (Exception<T> e){
+//
+//        }
+//    }
 }

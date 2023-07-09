@@ -1,9 +1,7 @@
 package com.canvs.collections;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.TreeSet;
 
 /**
  * _*_ coding: utf-8 _*_

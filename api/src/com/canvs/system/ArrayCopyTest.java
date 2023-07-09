@@ -1,6 +1,5 @@
 package com.canvs.system;
 
-import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;
 import org.junit.Test;
 
 import java.util.Arrays;

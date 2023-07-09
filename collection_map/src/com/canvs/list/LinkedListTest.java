@@ -3,7 +3,6 @@ package com.canvs.list;
 import org.junit.Test;
 
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * _*_ coding: utf-8 _*_

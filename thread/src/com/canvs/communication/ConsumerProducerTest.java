@@ -1,7 +1,5 @@
 package com.canvs.communication;
 
-import javax.management.MXBean;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/28 19:12

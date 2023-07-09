@@ -1,7 +1,5 @@
 package com.canvs._polymorphism.exer1;
 
-import java.util.Objects;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/19 23:03

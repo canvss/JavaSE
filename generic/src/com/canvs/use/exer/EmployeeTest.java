@@ -1,10 +1,8 @@
-package com.canvs.generic.exer;
+package com.canvs.use.exer;
 
 import org.junit.Test;
-import sun.java2d.pipe.SpanIterator;
 
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.TreeSet;
 

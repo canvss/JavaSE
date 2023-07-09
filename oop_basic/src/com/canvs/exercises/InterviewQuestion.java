@@ -1,7 +1,5 @@
 package com.canvs.exercises;
 
-import java.io.PrintStream;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/15 16:52

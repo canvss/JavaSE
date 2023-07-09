@@ -1,7 +1,5 @@
 package com.canvs._abstract.template.exer1;
 
-import java.awt.print.PrinterAbortException;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/21 11:27

@@ -1,7 +1,5 @@
 package com.canvs.wrapper;
 
-import com.canvs.Inner.InterviewQuestion;
-import com.canvs.Inner.Outer3;
 import org.junit.Test;
 
 /**

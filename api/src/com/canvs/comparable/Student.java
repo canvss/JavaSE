@@ -1,7 +1,6 @@
 package com.canvs.comparable;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * _*_ coding: utf-8 _*_

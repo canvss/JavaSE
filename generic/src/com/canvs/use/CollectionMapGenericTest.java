@@ -1,4 +1,4 @@
-package com.canvs.generic;
+package com.canvs.use;
 
 import org.junit.Test;
 

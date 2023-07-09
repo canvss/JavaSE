@@ -1,4 +1,4 @@
-package com.canvs.generic.exer;
+package com.canvs.use.exer;
 
 /**
  * _*_ coding: utf-8 _*_

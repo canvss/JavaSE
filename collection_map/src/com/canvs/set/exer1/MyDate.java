@@ -1,7 +1,5 @@
 package com.canvs.set.exer1;
 
-import java.util.Comparator;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/7/5 13:25

@@ -1,7 +1,5 @@
 package com.canvs.project.domain;
 
-import com.canvs.project.service.Status;
-
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/26 15:34

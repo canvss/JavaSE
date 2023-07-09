@@ -1,8 +1,5 @@
 package com.canvs.list.exer;
 
-import sun.java2d.pipe.SpanIterator;
-
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
