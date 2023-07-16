@@ -2,6 +2,8 @@ package com.canvs.string;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+
 /**
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/6/30 19:51
@@ -68,6 +70,10 @@ public class StringAPITest {
         String s2 = "hello.java";
         System.out.println("文件后缀名："+s2.substring(s2.lastIndexOf("."))); //.java
         System.out.println("文件名："+s2.substring(0,s2.lastIndexOf("."))); //hello
+        String s3 = "hello world 你好 世界";
+        String[] s = s3.split(" ");
+        System.out.println(Arrays.toString(s)); //[hello, world, 你好, 世界]
+        System.out.println(s[0]);
     }
     @Test
     public void test06(){

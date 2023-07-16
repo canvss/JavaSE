@@ -352,13 +352,21 @@ public class StringTest1 {
 
 - String substring(int beginIndex) ：返回一个新的字符串，它是此字符串的从beginIndex开始截取到最后的一个子字符串。 
 - String substring(int beginIndex, int endIndex) ：返回一个新字符串，它是此字符串从beginIndex开始截取到endIndex(不包含)的一个子字符串。 
+- public String[] split(String regex)：根据regex作为分隔符分割字符串返回一个数组
 
 ```java
- 	public void test05(){
-        String s1 = "helloworld";
+	public void test05(){
+       String s1 = "helloworld";
         System.out.println(s1.substring(7));    //rld
         System.out.println(s1.substring(3,6));  //low
-    }
+        String s2 = "hello.java";
+        System.out.println("文件后缀名："+s2.substring(s2.lastIndexOf("."))); //.java
+        System.out.println("文件名："+s2.substring(0,s2.lastIndexOf("."))); //hello
+        String s3 = "hello world 你好 世界";
+        String[] s = s3.split(" ");	//以空格分割符分割字符串
+        System.out.println(Arrays.toString(s)); //[hello, world, 你好, 世界]
+        System.out.println(s[0]);
+	}
 ```
 
 #### 字符/字符数组
