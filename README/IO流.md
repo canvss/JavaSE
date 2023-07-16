@@ -785,3 +785,205 @@ public class PictureEncryption {
 }
 ```
 
+### 处理流：缓冲流
+
+- 为了提高数据读写的速度，Java API提供了带缓冲功能的流类：缓冲流。
+- 缓冲流要套接在相应的节点流之上，根据数据操作单位可以吧缓冲流分为：
+  - 字节缓冲流：BufferedInputStream、BufferedOutputStream
+  - 字符缓冲流：BufferedReader、BufferedWriter
+- 缓冲流的基本原理：在创建流对象时，内部会创建一个缓冲区数组（缺省使用8192个字节(8kb)的缓冲区），通过缓冲区读写，减少系统IO次数，从而提高读写的效率。
+
+<img src="imgs/image-20220514183413011.png" alt="image-20220514183413011" style="zoom:80%;" />
+
+#### 构造器
+
+- public BufferedInputStream(InputStream in)：创建一个新的字节型的缓冲输入流
+- public BufferedOutputStream(OutputStream out)：创建一个新的字节型的缓冲输出流
+- public BufferedReader(Reader in)：创建一个新的字符型的缓冲输入流
+- public BufferedWriter(writer out)：创建一个新的字符型的缓冲输出流
+
+```java
+public class BufferedTest {
+    @Test
+    public void test01() throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream("hello.txt"));
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("hello.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("hello.txt"));
+        BufferedWriter bw = new BufferedWriter(new FileWriter("hello.txt"));
+    }
+}
+```
+
+#### 效率测试
+
+```java
+public class BufferedStreamTest {
+    public static void copyFileWithFileStream(File src,File desc) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            fis = new FileInputStream(src);
+            fos = new FileOutputStream(desc);
+            byte[] b = new byte[1024];
+            int len;
+            while ((len = fis.read(b)) != -1) fos.write(b, 0, len);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void copyFileWithBufferedStream(File src,File desc) {
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+        try {
+            bis = new BufferedInputStream(new FileInputStream(src));
+            bos = new BufferedOutputStream(new FileOutputStream(desc));
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = bis.read(buffer)) != -1) bos.write(buffer, 0, len);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (bos != null) bos.close();
+                if (bis != null) bis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test1() {
+        long start = System.currentTimeMillis();
+        String src = "/Users/canvs/Desktop/Test/2-4.Djangocms实战-2.ts";
+        String desc = "/Users/canvs/Desktop/Test/Djangocms实战-2.ts";
+        copyFileWithFileStream(new File(src),new File(desc));
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);      //1220
+    }
+    @Test
+    public void test2(){
+        long start = System.currentTimeMillis();
+        String src = "/Users/canvs/Desktop/Test/2-4.Djangocms实战-2.ts";
+        String desc = "/Users/canvs/Desktop/Test/Djangocms实战-2.ts";
+        copyFileWithBufferedStream(new File(src),new File(desc));
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);    //384
+    }
+}
+```
+
+#### 字符缓冲流特有方法
+
+字符缓冲流的基本方法与普通字符流调用方式一致；特有方法：
+
+- BufferedReader：public String readLine()：读一行文字。
+- BufferedWriter：public void newLine()：写一行行分隔符，由系统属性定义符号
+
+```java
+public class BufferedIOLineTest {
+    @Test
+    public void test01() {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter("hello.txt", true));
+            bw.write("hello world");
+            bw.newLine();
+            bw.write("你好 世界");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bw != null) bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test02() {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader("hello.txt"));
+            System.out.println(br.readLine());  //hello world
+            System.out.println(br.readLine()); //你好 世界
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test03() {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader("table.html"));
+            String data;
+            while ((data = br.readLine()) != null) System.out.println(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+> 说明：
+>
+> - 涉及到嵌套的多个流时，如果都显示关闭的话，需要先关闭外层的流，再关闭内层的流
+> - 其实在开发中，只需要关闭最外层的流即可，因为在关闭外层流时，内层的流也会被关闭。
+
+#### 练习：
+
+姓氏统计：一个文本文件中存储着北京所有高校在校生的姓名，格式如下：
+
+```txt
+每行一个名字，姓与名以空格分隔：
+张 三
+李 四
+王 小五
+```
+
+```java
+public class Exer {
+    public static void main(String[] args) throws IOException {
+        HashMap<String,Integer> map = new HashMap<>();
+        File file = new File("IO/NameList.txt");
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String data;
+        while ((data = br.readLine())!=null){
+            String firstName = data.split(" ")[0];
+            if (map.containsKey(firstName)){
+                map.put(firstName,map.get(firstName)+1);
+            }else{
+                map.put(firstName,1);
+            }
+        }
+        System.out.println(map);
+        br.close();
+        Set<Map.Entry<String, Integer>> entries = map.entrySet();
+        Iterator<Map.Entry<String, Integer>> iterator = entries.iterator();
+        while (iterator.hasNext()) System.out.println(iterator.next());
+    }
+}
+```
+
