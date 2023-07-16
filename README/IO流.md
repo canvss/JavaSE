@@ -321,7 +321,7 @@ public class ListFilesTest {
 
   ![image-20220412230751461](imgs/image-20220412230751461.png)
 
-### 流的API
+#### 流的API
 
 - Java的IO流共涉及40多个类，实际上非常规则，都是如下4个抽象基类派生的
 
@@ -346,4 +346,442 @@ public class ListFilesTest {
 | 打印流     |                      | Printstream           |                   | PrintWriter        |
 | 推回输入流 | PushbacklnputStream  |                       | PushbackReader    |                    |
 | 特殊流     | DatalnputStream      | DataOutputStream      |                   |                    |
+
+##### 常用的节点流：
+
+- 文件流：FileInputStream、FileOutputStream、FileReader、FileWriter
+- 字节/字符数组流：ByteArrayInputStream、ByteArrayOutputStream、CharArrayReader、CharArrayWriter
+  - 对数组进行处理的节点流（对应的不再是文件，而是内存中的一个数组）
+
+##### 常用处理流：
+
+- 缓冲流：BufferedInputStream、BufferedOutputStream、BufferedReader、BufferedWriter
+  - 作用：增加缓冲功能，避免频繁读写硬盘，进而提升读写效率
+- 转换流：InputStreamReader、OutputStreamReader
+  - 作用：实现字节流和字符流之间的转换。
+- 对象流：ObjectInputStream、ObjectOutputStream
+  - 作用：提供直接读写Java对象功能
+
+### 流节点：FileReader/FileWriter
+
+#### Reader与Writer
+
+Java提供一些字符流，以字符为单位读写数据，专门用于处理文本文件。不能操作图片、视频等非文本文件
+
+> 常见的文本文件有：.txt、.java、.c、.cpp、.py等
+>
+> 注意：.doc、.xls、.ppt
+
+#### 字符输入流：Reader
+
+`java.io.Reader`抽象类是表示用于读取字符流的所有类的父类，可以读取字符信息到内存中。它定义了字符输入流的基本功性功能方法。
+
+- public int read()：从字符流读取一个字符。虽然读取了一个字符，但是会自动提升为int类型。返回该字符的Unicode编码值。如果已经到达末尾了，则返回-1。
+- public int read(char[] cbuf)：从输入流中读取一些字符，并将它们存储到字符数组cbuf中，每次最多读取cbuf.length个字符。返回实际读取的字符个数。如果已经到达流末尾，没有数据可读，则返回-1
+- public int read(char[] cbuf, int off, int len)：从输入流中读取一些字符，并将它们存储到字符数组cbuf中，从cbuf[off]开始位置存储。每次最多读取len个字符。返回实际读取的字符个数。如果已经到达流末尾，没有数据可读，则返回-1。
+- public void close()：关闭此流并释放此流相关联的任何系统资源。
+
+> 注意：当完成流的操作时，必须调用close()方法，释放系统资源，否则会造成内存泄漏。
+
+#### 字符输出流：Writer
+
+`java.io.Writer`抽象类表示用于写出字符流的所有类的父类，将指定的字符信息写出到目的地。它定义了直接输出流的基本共性功能方法。
+
+- public void writer(int c)：写出单个字符
+- public void writer(char[] cbuf)：写出字符数组
+- public void writer(char[] cbuf, int off, int len)：写出字符数组从off开始到len结束部分内容；
+- public void writer(String str)：写出字符串
+- public void writer(String str, int off, int len)：写出字符串从off开始到len结束部分内容；
+- public void flush()：刷新该流的缓冲
+- public void close()：关闭此流
+
+#### FileReader与FileWriter
+
+#### FileReader
+
+`java.io.FileReader`类用于读取字符文件，构造时使用系统默认的字符编码和默认字符缓冲区。
+
+- FileReader(File file)：创建新的FileReader，给定要读取的File对象。
+- FileReader(String fileName)：创建一个新的FileReader，给定要读取的文件的名称。
+
+**举例**：读取hello.txt文件中的字符数据，并输出到控制台
+
+```java
+public class FileReaderTest {
+    @Test
+    public void test01() {
+        File file = new File("hello_copy.txt");
+        FileReader fr = null;
+        try {
+            fr = new FileReader(file);
+            int data;
+            while ((data = fr.read()) != -1) System.out.print((char) data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fr != null) fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test02() {
+        File file = new File("hello_copy.txt");
+        FileReader fr = null;
+        try {
+            fr = new FileReader(file);
+            char[] cbuf = new char[5];
+            int len;
+            //错误方式
+            //while ((len=fr.read(cbuf)) != -1) System.out.print(new String(cbuf));
+            while ((len = fr.read(cbuf)) != -1) System.out.print(new String(cbuf, 0, len));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fr != null) fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test03() {
+        FileReader fr = null;
+        try {
+            fr = new FileReader("hello_copy.txt");
+            char[] cbuf = new char[5];
+            int len;
+            //错误方式
+            //while ((len=fr.read(cbuf)) != -1) System.out.print(new String(cbuf));
+            while ((len = fr.read(cbuf)) != -1) System.out.print(new String(cbuf, 0, len));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fr != null) fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+**不同实现方式的类比：**
+
+![image-20220518095907714](imgs/image-20220518095907714.png)
+
+#### FileWriter
+
+`java.io.FileWriter`类用于写出字符到文件，构造时使用默认的字符编码和默认字节缓冲区。
+
+- FileWriter(File file)：创建一个新的FileWriter，给定要读取的File对象。
+- FileWriter(File file, boolean append)：创建一个新的FileWriter，指明是否在现有文件末尾追加内容。
+- FileWriter(String fileName)：创建一个新的FileWriter，给定要读取的文件的名称。
+
+```java
+public class FileWriterTest {
+    @Test
+    public void test04() {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter("hello1.txt",true);
+            fw.write("Hello World!");
+            fw.write("你好");
+            fw.write(123);
+            Thread.sleep(10000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fw != null) fw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test05() {
+        File src = new File("hello_copy.txt");
+        File desc = new File("hello.txt");
+        FileReader fr = null;
+        FileWriter fw = null;
+        try {
+            fr = new FileReader(src);
+            fw = new FileWriter(desc);
+            char[] cbuf = new char[5];
+            int len;
+            while ((len = fr.read(cbuf)) != -1) fw.write(cbuf, 0, len);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fw != null) fw.close();
+                if (fr != null) fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+##### 小结：
+
+- 因为出现流资源的调用，为了避免内存泄漏，需要使用try-catch-finally处理异常
+- 对于输入流来说，File类的对象必须在屋里磁盘上存在，否则执行就会报FileNotFoundException。如果传入的是一个目录，则会报IOException异常。
+- 对于输出流来说，File类的对象是可以不存在的。
+  - 如果File类的对象不存在，则可以在输出的过程中，自动创建File类的对象
+  - 如果File类的对象存在
+    - 如果调用FileWriter(File file)或者FileWriter(File file, false)，输出时会新建File文件覆盖已有的文件
+    - 如果调用FileWriter(File file, true)构造器，则在现有的文件末尾追加写出内容
+
+#### flush(刷新)
+
+因为内置缓冲区的原因，如果FileWriter不关闭输出流，无法写出字符到文件中。但是关闭的流对象，是无法继续写出数据的。如果我们既想写出数据，又想继续使用流，就需要`public void flush()`方法。
+
+- flush()：刷新缓冲区，流对象可以继续使用。
+- close()：线刷新缓冲区，然后通知系统释放资源。流对象不可以再被使用了。
+
+> 注意：即便是flush()方法写出了数据，操作的最后还是需要调用close方法，释放系统资源。
+
+```java
+public class FileWriterFlushTest {
+    @Test
+    public void test1() {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(new File("a.txt"));
+            fw.write("Hello");
+            fw.flush();
+            fw.write("world");
+            fw.flush();
+            fw.write("!");
+            fw.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fw != null) fw.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+```
+
+### 流节点：FileInputStream/FileOutputStream
+
+如果读取或写出的数据是非文本文件，则Reader、Writer就无能为力了，必须使用字节流。
+
+#### 字节输入流：InputStream
+
+`java.io.InputStream`抽象类是表示字节输入流的所有类的超类，可以读取字节信息到内存中。它定义了字节输入流的基本共性功能方法。
+
+- public int read()：从输入流读取一个字节，如果没有数据可读，则返回-1
+- public int read(byte[] b)：从输入流中读取一些字节数，并将它们存储到字节数组b中。每次最多读取b.length个字节。返回实际读取字节个数。如果没有数据可读，则返回-1
+- public int read(byte[] b, int off, int len)：从输入流中读取一些字节数，并将它们存储到字节数组b中，从b[off]开始存储，每次最多读取len个字节。返回实际读取的字节个数。如果没有数据可读，则返回-1
+- public void close()：关闭此输入流并释放与此流相关联的任何系统资源。
+
+#### 字节输出流：OutputStream
+
+`java.io.OutputStream`抽象类是表示字节输出流的所有类的超类，将指定的字节信息写出到目的地。它定义了字节输出流的基本共性功能方法。
+
+- public void writer(int b)：将指定的字节输出流。虽然参数为int类型四个字节，但是只会保留一个字节的信息写出。
+- public void writer(byte[] b)：将b.length字节从指定的数组写入此输出流。
+- public void writer(byte[] b ,int off, int len)：从指定的字节数组写入len字节，从偏移量off开始输出到此输出流。
+- public void flush()：刷新此输出流并强制任何缓冲的输出字节被写出。
+- public void close()：关闭此输出流相关联的流和系统资源
+
+#### FileInputStream
+
+`java.io.FileInputStream`类是文件输入流，从文件中读取字节。
+
+- FileInputStream(File file)：通过打开与实际文件的连接来创建一个FileInputStream，该文件由文件系统中的File对象file命名。
+- FileInputStream(String name)：通过打开与实际文件的连接来创建一个FileInputStream，该文件由文件系统中的路径名name命名。
+
+```java
+public class FileInputStreamTest {
+    @Test
+    public void test01() {
+        File file = new File("hello.txt");
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            byte[] b = new byte[10];
+            int len;
+            while ((len = fis.read(b)) != -1) {
+                System.out.print(new String(b, 0, len));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    @Test
+    public void test02() {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream("hello.txt");
+            int len;
+            //读取到中文会乱码，读取中文使用read(byte[] b)
+            while ((len = fis.read()) != -1) System.out.print((char) len);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+#### FileOutputStream
+
+`java.io.FileOutputStream`类是文件输出流，用于将数据写出到文件
+
+- public FileOutputStream(File file)：创建文件输出流，写出由指定的File对象表示的文件
+- public FileOutputStream(String  name)：创建文件输出流，指定的名称问写出文件。
+- public FileOutputStream(File file, boolean append)：创建文件输出流，指明是否在现有文件末尾追加内容
+
+```java
+public class FileOutputStreamTest {
+    @Test
+    public void test01() throws IOException {
+        File file = new File("c.txt");
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(97);
+        fos.write(98);
+        fos.write(99);
+        fos.close();
+    }
+    @Test
+    public void test02() {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream("a.txt", true);
+            byte[] b = "hello".getBytes();
+            fos.write(b, 0, 4);
+            fos.write("world".getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test03() {
+        String src = "MyRunnable.java";
+        String desc = "MyRunnable_copy.java";
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            fis = new FileInputStream(src);
+            fos = new FileOutputStream(desc);
+            byte[] b = new byte[1024];
+            int len;
+            while ((len = fis.read(b)) != -1) {
+                fos.write(b, 0, len);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+               e.printStackTrace();
+            }
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+#### 练习：实现图片加密操作
+
+```java
+public class PictureEncryption {
+    public static void main(String[] args) throws FileNotFoundException {
+//        	encryption(new File("zhouhuiming.jpeg"));
+            decryption(new File("encryption_zhouhuiming.jpeg"));
+    }
+    public static void encryption(File file) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            fis = new FileInputStream(file);
+            fos = new FileOutputStream("encryption_" + file.getName());
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) != -1) {
+              //给每个字节做异或运算
+                for (int i = 0; i < buffer.length; i++) buffer[i] ^= 5;
+                fos.write(buffer, 0, len);
+            }
+            System.out.println("加密成功！");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void decryption(File file) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            fis = new FileInputStream(file);
+            fos = new FileOutputStream("decryption_" + file.getName());
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) != -1) {
+                for (int i = 0; i < buffer.length; i++) buffer[i] ^= 5;
+                fos.write(buffer,0,len);
+            }
+            System.out.println("解密成功！");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
 
