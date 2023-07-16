@@ -291,7 +291,7 @@ public class ListFilesTest {
   - 输入Input：读取外部数据（磁盘、光盘等存储设备的数据）到程序（内存）中。
   - 输出Output：将程序（内存）数据输出到磁盘、光盘等存储设备中。
 
-![image-20220412224700133](/Users/canvs/Desktop/JAVA/JavaSE/README/imgs/image-20220412224700133.png)
+![image-20220412224700133](imgs/image-20220412224700133.png)
 
 #### 流的分类
 
