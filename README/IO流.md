@@ -1180,4 +1180,87 @@ public class GBKToUTF8 {
 }
 ```
 
-### 处理流
+### 处理流：数据流、对象流
+
+#### 数据流与对象流说明
+
+如果需要将内存中定义的变量（包括基本数据类型或引用数据类型）保存在文件中，Java提供了数据流和对象流来处理这些类型的数据
+
+- 数据流：DataOutputStream、DataInputStream
+
+  - DataOutputStream：允许应用程序将基本数据类型、String类型的变量写入输出流中
+
+  - DataInputStream：允许应用程序以与机器无关的方式从底层输入流中读取基本数据类型、String类型的变量
+
+- 数据流DataInputStream中的方法
+
+```java
+byte readByte()                short readShort()  
+int readInt()                  long readLong()  
+float readFloat()              double readDouble()  
+char readChar()        					boolean readBoolean()            
+String readUTF()               void readFully(byte[] b)
+```
+
+- 数据流DataOutputStream中的方法
+
+```java
+byte writeByte()                short writeShort()  
+int writeInt()                  long writeLong()  
+float writeFloat()              double writeDouble()  
+char writeChar()        					boolean writeBoolean()            
+String writeUTF()               void writeFully(byte[] b)
+```
+
+- 数据流的弊端：只支持java基本数据类型和字符串的读写，而不支持其他Java对象的类型。而ObjectOutputStream和ObjectInputStream即支持Java基本数据类型的数据读写，又支持Java对象的读写。
+- 对象流：ObjectOutputStream、ObjectInputStream
+  - ObjectOutpuStream：将Java基本数据类型和对象写入字节输出流中。通过在流中使用文件可以实现Java各种基本数据类型的数据以及对象的持久化存储。
+  - ObjectInputStream：ObjectInputStream对以前使用ObjectOutputStream写出的基本数据类型的数据和对象进行读入操作，保存在内存中。
+
+> 说明：对象流的强大之处就是可以吧Java中的对象写入到数据源中，也能把对象从数据源中还原回来。
+
+#### 对象流API
+
+**ObjectOutpuStream中的构造器**
+
+`public ObjectOutputStream(OutputStream out)`：创建一个指定的ObjectOutputStream。
+
+```
+
+```
+
+**ObjectOutputStream中的方法**
+
+- public void writeBoolean(Boolean val)：写出一个boolean值
+- public void writeByte(int val)：写出一个8位字节
+- public void writeShort(int val)：写出一个16位的short值
+- public void writeChar(int val)：写出一个16位char值
+- public void writeInt(int val)：写出一个32位int值
+- public void writeLong(long val)：写出一个64位long值
+- public void writeFloat(float val)：写出一个32位float值
+- public void writeDouble(double val)：写出一个64位double值
+- public void writeUTF(String str)：将表示长度信息的两个字节写入输出流，后跟字符串s中的每个字符UTF-8修改版表示形式。根据字符的值，将字符串s中的每个字符转换成一个字节、两个字节或三个字节的字节组。注意：将String作为基本数据写入流中与它作为Object写入流中明显不同。如果s位null，则抛出NullPointerException。
+- public void writeObject(Object obj)：写出一个obj对象
+- public void close()：关闭此输出流并释放与此相关联的任何系统资源
+
+**ObjectInputStream中的构造器**
+
+`public ObjectInputStream(InputStream in)`：创建一个指定的ObjectInputStream
+
+```java
+
+```
+
+**ObjectInputStream中的方法**
+
+- public boolean readBoolean()：读取一个 boolean 值
+- public byte readByte()：读取一个 8 位的字节
+- public short readShort()：读取一个 16 位的 short 值
+- public char readChar()：读取一个 16 位的 char 值
+- public int readInt()：读取一个 32 位的 int 值
+- public long readLong()：读取一个 64 位的 long 值
+- public float readFloat()：读取一个 32 位的 float 值
+- public double readDouble()：读取一个 64 位的 double 值
+- public String readUTF()：读取 UTF-8 修改版格式的 String
+- public void readObject(Object obj)：读入一个obj对象
+- public void close() ：关闭此输入流并释放与此流相关联的任何系统资源
