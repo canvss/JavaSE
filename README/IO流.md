@@ -987,3 +987,197 @@ public class Exer {
 }
 ```
 
+### 处理流：转换流
+
+```java
+public class Problem {
+    public static void main(String[] args) throws IOException {
+        FileReader fr = new FileReader(new File("/Users/canvs/Desktop/JAVA/dbcp_gbk.txt"));
+        int data;
+        while ((data = fr.read())!=-1) System.out.print((char) data);
+        fr.close();
+    }
+}
+
+输出结果：
+dbcp���ӳس��û�����������
+```
+
+针对文本文件，现在使用一个字节流进行数据的读入，希望将数据显示在控制台上。此时针对包含中文的文本数据，可能会出现乱码。
+
+**作用**：转换流是字节与字符间的桥梁
+
+![](imgs/image-20220412231533768.png)
+
+#### InputStreamReader
+
+- 转换流`java.io.InputStreamReader`，是Reader的子类，是从字节流到字符流的桥梁。它读取字节，并使用指定的字符集将其解码为字符。它的字符集可以由名称指定，也可以接受平台的默认字符集。
+- 构造器
+  - InputStreamReader(InputStream in)：创建一个使用默认字符集的字符流
+  - InputStreamReader(InputStream in, String charsetName)：创建一个指定字符集的字符流
+
+```java
+public class InputStreamReaderTest {
+    @Test
+    public void test01() throws FileNotFoundException, UnsupportedEncodingException {
+        FileInputStream fis = new FileInputStream(new File("hello.txt"));
+        InputStreamReader isr = new InputStreamReader(fis);
+        InputStreamReader isr1 = new InputStreamReader(fis,"utf-8");
+    }
+    @Test
+    public void test02() {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(new File
+                    ("/Users/canvs/Desktop/JAVA/dbcp_gbk.txt"));
+            InputStreamReader isr = new InputStreamReader(fis, "gbk");
+            int len;
+            while ((len = isr.read()) != -1) System.out.print((char) len);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+```
+
+#### OutputStreamWriter
+
+- 转换流`java.io.OutputStreamWriter`，是Writer的子类，是从字符流到字节流的桥梁。使用指定的字符集将字符编码为字节。它的字符集可以由名称指定，也可以接受平台的默认字符集。
+- 构造器
+  - OutputStreamWriter(OutputStream in)：创建一个使用默认字符集的字节流
+  - OutputStreamWriter(OutputStream in, String charsetName)：创建一个指定字符集的字节流
+
+```java
+public class OutputStreamWriterTest {
+    @Test
+    public void test01() throws UnsupportedEncodingException, FileNotFoundException {
+        FileOutputStream fos = new FileOutputStream(new File("a.txt"));
+        OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
+        OutputStreamWriter osw1 = new OutputStreamWriter(fos);
+    }
+    @Test
+    public void test02() {
+        OutputStreamWriter osw = null;
+        try {
+            FileOutputStream fos = new FileOutputStream(new File("a.txt"));
+            osw = new OutputStreamWriter(fos, "utf-8");
+            osw.write("hello");
+            osw.write("你好！");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (osw != null) osw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+#### 编码与解码
+
+计算机中存储的信息都是用二进制表示的，而我们在屏幕上看到的数字、英文、标点符号、汉子等字符是二进制数转换之后的结果。按照某种规则，将字符存储到计算机中，称为**编码**。反之，将存储在计算机中的二进制数按照某种规则解析显示出来，称为**解码**。
+
+**字符编码（Character Encoding）**：就是一套自然语言的字符与二进制数之间的对应规则。
+
+**编码表**：生活中文字和计算机中二进制的对应规则
+
+**乱码的情况**：按照A规则存储，同样按照A规则解析，那么就能显示正确的文本符号。反之，按照A规则存储，再按照B规则解析，就会导致乱码现象。
+
+#### 字符集
+
+- 字符集Charset：也叫编码表。是一个系统支持的所有字符的集合，包括各国家文字、标点符号、图形符号、数字等。
+
+- 计算机要准确的存储和识别各种字符集符号，需要进行字符编码，一套字符集必然至少有一套字符编码。常见的字符集有ASCII字符集、GBK字符集、Unicode字符集等。
+
+- **ASCII字符集** ：
+
+  * ASCII码（American Standard Code for Information Interchange，美国信息交换标准代码）：上个世纪60年代，美国制定了一套字符编码，对`英语字符`与二进制位之间的关系，做了统一规定。这被称为ASCII码。
+  * ASCII码用于显示现代英语，主要包括控制字符（回车键、退格、换行键等）和可显示字符（英文大小写字符、阿拉伯数字和西文符号）。
+  * 基本的ASCII字符集，使用7位（bits）表示一个字符（最前面的1位统一规定为0），共`128个`字符。比如：空格“SPACE”是32（二进制00100000），大写的字母A是65（二进制01000001）。
+  * 缺点：不能表示所有字符。
+
+- **Unicode字符集** ：
+
+  * Unicode编码为表达`任意语言的任意字符`而设计，也称为统一码、标准万国码。Unicode 将世界上所有的文字用`2个字节`统一进行编码，为每个字符设定唯一的二进制编码，以满足跨语言、跨平台进行文本处理的要求。
+
+  - Unicode 的缺点：这里有三个问题：
+    - 第一，英文字母只用一个字节表示就够了，如果用更多的字节存储是`极大的浪费`。
+    - 第二，如何才能`区别Unicode和ASCII`？计算机怎么知道两个字节表示一个符号，而不是分别表示两个符号呢？
+    - 第三，如果和GBK等双字节编码方式一样，用最高位是1或0表示两个字节和一个字节，就少了很多值无法用于表示字符，`不够表示所有字符`。
+  - Unicode在很长一段时间内无法推广，直到互联网的出现，为解决Unicode如何在网络上传输的问题，于是面向传输的众多 UTF（UCS Transfer Format）标准出现。具体来说，有三种编码方案，UTF-8、UTF-16和UTF-32。
+
+- **UTF-8字符集**：
+
+  * Unicode是字符集，UTF-8、UTF-16、UTF-32是三种`将数字转换到程序数据`的编码方案。顾名思义，UTF-8就是每次8个位传输数据，而UTF-16就是每次16个位。其中，UTF-8 是在互联网上`使用最广`的一种 Unicode 的实现方式。
+  * 互联网工程工作小组（IETF）要求所有互联网协议都必须支持UTF-8编码。所以，我们开发Web应用，也要使用UTF-8编码。UTF-8 是一种`变长的编码方式`。它使用1-4个字节为每个字符编码，编码规则：
+    * 128个US-ASCII字符，只需一个字节编码。
+    * 拉丁文等字符，需要二个字节编码。 
+    * 大部分常用字（含中文），使用三个字节编码。
+    * 其他极少使用的Unicode辅助字符，使用四字节编码。
+
+> 注意：在中文操作系统上，ANSI（美国国家标准学会、AMERICAN NATIONAL STANDARDS INSTITUTE: ANSI）编码即为GBK；在英文操作系统上，ANSI编码即为ISO-8859-1。
+
+#### 练习
+
+把字符编码为GBK，拷贝一份字符编码为UTF-8
+
+```java
+public class GBKToUTF8 {
+    public static void main(String[] args) {
+        String src = "/Users/canvs/Desktop/JAVA/dbcp_gbk.txt";
+        String desc = "/Users/canvs/Desktop/JAVA/dbcp_utf8.txt";
+        InputStreamReader isr = null;
+        OutputStreamWriter osw = null;
+        try {
+            FileInputStream fis = new FileInputStream(new File(src));
+            FileOutputStream fos = new FileOutputStream(desc);
+            isr = new InputStreamReader(fis, "GBK");
+            osw = new OutputStreamWriter(fos, "utf-8");
+            char[] buffer = new char[1024];
+            int len;
+            while ((len = isr.read(buffer)) != -1) osw.write(buffer, 0, len);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (osw != null) osw.close();
+                if (isr != null) isr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Test
+    public void test01() {
+        InputStreamReader isr = null;
+        try {
+//            FileInputStream fis = new FileInputStream("/Users/canvs/Desktop/JAVA/dbcp_gbk.txt");
+            FileInputStream fis = new FileInputStream("/Users/canvs/Desktop/JAVA/dbcp_utf8.txt");
+            isr = new InputStreamReader(fis,"utf-8");
+            char[] buffer = new char[1024];
+            int len;
+            while ((len = isr.read(buffer)) != -1) System.out.print(new String(buffer, 0, len));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (isr != null) isr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+### 处理流
