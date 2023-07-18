@@ -1225,8 +1225,18 @@ String writeUTF()               void writeFully(byte[] b)
 
 `public ObjectOutputStream(OutputStream out)`：创建一个指定的ObjectOutputStream。
 
-```
-
+```java
+public class ObjectOutputStreamTest {
+    @Test
+    public void test01() throws IOException {
+        FileOutputStream fos = new FileOutputStream(new File("objectStream.dat"));
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        int a = 1024;
+        oos.writeInt(a);
+        oos.writeChar('A');
+        oos.close();
+    }
+}
 ```
 
 **ObjectOutputStream中的方法**
@@ -1248,7 +1258,17 @@ String writeUTF()               void writeFully(byte[] b)
 `public ObjectInputStream(InputStream in)`：创建一个指定的ObjectInputStream
 
 ```java
-
+public class ObjectInputStreamTest {
+    @Test
+    public void test01() throws IOException {
+        FileInputStream fis = new FileInputStream("objectStream.dat");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        int a = ois.readInt();
+        System.out.println(a);
+        char c = ois.readChar();
+        System.out.println(c);
+    }
+}
 ```
 
 **ObjectInputStream中的方法**
@@ -1264,3 +1284,441 @@ String writeUTF()               void writeFully(byte[] b)
 - public String readUTF()：读取 UTF-8 修改版格式的 String
 - public void readObject(Object obj)：读入一个obj对象
 - public void close() ：关闭此输入流并释放与此流相关联的任何系统资源
+
+#### 对象序列化机制
+
+对象序列化允许把内存中的Java对象转换成平台无关的二进制流，从而允许把这种二进制流持久化保存在磁盘上，或通过网络将这种二进制流传输到另外一个网络节点。当其它程序获取了这种二进制流，就可以恢复成原来的Java对象。
+
+- 序列化过程：用一个字节序列可以表示一个对象，该字节序列包含该对象的类型和对象中存储的属性等信息。字节序列写出到文件之后，相当于文件中持久保存了一个对象的信息。
+- 反序列化过程：该字节序列还可以从文件中读取回来，重构对象，对它进行反序列化。对象的数据、对象的类型和对象中存储的数据信息，都可以用来在内存中创建对象。
+
+![](imgs/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy83QjhpYWF1QWZjbFBaTUgxeEZIcm1KYTFmcWNZa2NqNEk3bGt0UEh1TDFEMVI4WFV4dHhqYzNHd0RLMnRDSXM1dUNLaWNMckk3WEU3SWFKQ3R3ZGZCWU53LzY0MA.png)
+
+##### 序列化机制的重要性
+
+序列化是RMI（Remote Method Invoke）远程方法调用，过程的参数和返回值都必须实现的机制，而RMI是JavaEE的基础。因此序列化机制是JavaEE平台的基础。
+
+序列化的好处，在于可将任何实现了Serializable接口的对象转化为字节数据，使其在保存和传输时可被还原。
+
+##### 实现原理
+
+- 序列化：用ObjectOutputStream类保存基本数据类型或对象的机制。
+  - public final void writeObject(Object obj)
+- 反序列化：用ObjectInputStream类读取基本数据类型或对象的机制
+  - public final void readObject(Object obj)
+
+#### 实现序列化机制
+
+如果需要让某个对象支持序列化机制，则必须让对象所属的类及属性是可序列化的，为了让某个类是可序列化的，该类必须实现`java.io.Serializable`接口。Serializable是一个标记接口，不实现此接口的类将不会使任何状态序列化或反序列化，会抛出`NotSerializableException`。
+
+- 如果对象的某个属性也是引用数据类型，那么如果该属性也要序列化，也要实现`Serializable`接口
+- 该类的所有属性必须是可以序列化的。如果有一个属性不需要可序列化，则该属性必须注明是瞬态的，使用`transient`关键字修饰
+- `static`修饰的值不会序列化。因为静态变量的值不属于某个对象
+
+```java
+public class Person implements Serializable {
+    public static int id;
+    public String name;
+    public int age;
+    public transient String address;
+    static final long serialVersionUID = 54156158121515125L;
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    public Person(String name, int age, String address) {
+        this.name = name;
+        this.age = age;
+        this.address = address;
+    }
+    @Override
+    public String toString() {
+        return "id="+id+" name="+name+" age="+age+" address="+address;
+    }
+}
+```
+
+```java
+public class SerializableTest {
+    @Test
+    public void test01() throws IOException {
+        FileOutputStream fos = new FileOutputStream(new File("a.dat"));
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeUTF("canvs");
+        oos.writeInt(22);
+        oos.writeBoolean(true);
+        oos.writeFloat(9800.4f);
+        oos.writeDouble(78.3);
+        oos.close();
+    }
+    @Test
+    public void test02() throws IOException {
+        FileInputStream fis = new FileInputStream("a.dat");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        String name = ois.readUTF();
+        int age = ois.readInt();
+        boolean gender = ois.readBoolean();
+        float salary = ois.readFloat();
+        double bonus = ois.readDouble();
+        System.out.println("姓名：" + name + " 年龄：" + age + " 性别：" + (gender ? '男' : '女') + " 工资：" + salary + " 奖金：" + bonus);
+        ois.close();
+    }
+    @Test
+    public void test03() {
+        ObjectOutputStream oos = null;
+        try {
+            FileOutputStream fs = new FileOutputStream(new File("person.dat"));
+            oos = new ObjectOutputStream(fs);
+            Person p = new Person("jerry", 13, "美国");
+            oos.writeObject(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (oos != null) oos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test04() {
+        ObjectInputStream ois = null;
+        try {
+            FileInputStream fis = new FileInputStream("person.dat");
+            ois = new ObjectInputStream(fis);
+            Person p = (Person) ois.readObject();
+            System.out.println(p.toString());
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ois != null) ois.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test05() {
+        ArrayList<Person> persons = new ArrayList<>();
+        persons.add(new Person("canvs", 22, "香港"));
+        persons.add(new Person("Tom", 21, "美国"));
+        persons.add(new Person("波多野结衣", 30, "日本"));
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(new FileOutputStream("Persons.dat"));
+            oos.writeObject(persons);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (oos != null) oos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Test
+    public void test06() {
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(new FileInputStream("Persons.dat"));
+            ArrayList<Person> people = (ArrayList<Person>) ois.readObject();
+            Iterator<Person> iterator = people.iterator();
+            while (iterator.hasNext()) System.out.println(iterator.next().toString());
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ois != null) ois.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+#### 反序列化失败问题
+
+- 对于JVM可以反序列化对象，它必须是能够找到class文件的类。如果找不到该类的class文件，则抛出一个ClassNotFoundException异常
+
+- 当JVM反序列化对象时，能找到class文件，但是class文件在序列化对象之后发生了修改，那么反序列化操作也会失败，抛出一个InvalidClassException异常。
+
+  - 该类的序列版本号与从流中读取的类描述的版本号不匹配
+  - 该类包含未知数据类型
+  - 解决办法：Serializable接口给序列化的类，提供一个序列版本号：serialVersionUID。凡事实现Serializable接口的类都应该有一个表示序列化版本标识符的静态变量。
+
+  ```java
+  static final long serialVersionUID = 54156158121515125L;
+  ```
+
+  - serialVersionUID用来表明类的不同版本间的兼容性。Java的序列化机制是通过在运行时判断类的serialVersionUID来验证版本的一致性。在进行反序列化时，JVM会把传来的字节流中的serialVersionUID与本地相应的实体类的serialVersionUID进行比较，如果相同就认为是一致的，可以进行反序列化，否则就会出现序列化版本不一致的异常(InvalidCastException)
+  - 如果类没有显示定义这个静态常量，它的值是Java运行时环境根据类的内部细节自动生成的。若类的实例变量做了修改，serialVersionUID可能发生变化。因此，建议显示声明。
+  - 如果声明了serialVersionUID，即使在序列化完成之后修改了类导致类重新编译，则原来的数据也能正常反序列化，只是新增的字段值是默认值而已。
+
+#### 面试题：
+
+谈谈java.io.Serializable接口的理解
+
+```txt
+实现了Serializable接口的对象，可将它们转换成一系列字节，并可在以后完全恢复原来的样子。这一过程亦可通过网络进行。这意味着序列化机制能自动补偿操作系统间的差异。如：可以现在Windows机器上创建一个对象，对其序列化，然后通过网络发给一台Unix机器，然后在那里准确无误的重新装配。不必关心数据子啊不同机器上如何表示，也不必关心字节的顺序或者其它的任何细节。
+由于大部分作为参数的类如String、Integer等都实现了java.io.Serializable的接口，也可以利用多态的性质，作为参数使接口更加灵活。
+```
+
+### 其它流的使用
+
+#### 标准输入、输出流
+
+- System.in和System.out分别代表了系统标准的输入和输出设备
+- 默认输入设备是：键盘；输出设备是：显示器
+- System.in的类型是InputStream
+- System.out的类型是PrintStream，其是OutputStream的子类FilterOutputStream的子类
+- 重定向：通过System类的setIn，setOut方法对默认设备进行改变
+  - public static void setIn(InputStream in)
+  - public static void setOut(PrintStream out)
+
+**案列**：从键盘输入字符串，要求读取到的整行字符串转换成大些输出。然后继续继续输入操作，直到输入e时，退出程序。
+
+```java
+public class OtherStreamTest {
+    @Test
+    public void test01() {
+        InputStreamReader isr = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(isr);
+        String temp = null;
+        try {
+            while ((temp = br.readLine())!=null && !temp.equals("exit")) {
+                System.out.println(temp.toUpperCase());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+**扩展**：
+
+System类中有三个常量对象：System.out、System.in、System.err
+
+```java
+public final static InputStream in = null;
+public final static PrintStream out = null;
+public final static PrintStream err = null;
+```
+
+- 这三个常量对象有final声明，但是却初始化为null。final声明的常量一旦赋值就不能修改，那么null不会空指针异常吗？
+- 这三个常量对象为什么要小写？final声明的常量按照命名规范不是应该大写吗？
+- 这三个常量的对象有set方法？final声明的常量不是不能修改值吗？set方法是如何修改它们的值的？
+
+> final声明的常量，表示在Java的语法体系中它们的值是不能修改的，而这三个常量对象的值是由C/C++等系统函数进行初始化和修改值的，所以它们故意没有用大写，也有set方法。
+
+```java
+public static void setOut(PrintStream out) {
+    checkIO();
+    setOut0(out);
+}
+public static void setErr(PrintStream err) {
+    checkIO();
+    setErr0(err);
+}
+public static void setIn(InputStream in) {
+    checkIO();
+    setIn0(in);
+}
+private static void checkIO() {
+    SecurityManager sm = getSecurityManager();
+    if (sm != null) {
+        sm.checkPermission(new RuntimePermission("setIO"));
+    }
+}
+private static native void setIn0(InputStream in);
+private static native void setOut0(PrintStream out);
+private static native void setErr0(PrintStream err);
+```
+
+**练习**：
+
+Create a program named MyInput.java: Contain the methods for reading int, double, float, boolean, short, byte and String values from the keyboard.
+
+```java
+public class MyInput {
+    public static String readString(){
+        InputStreamReader isr = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(isr);
+        String str = null;
+        try {
+            str = br.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return str;
+    }
+    public static int readInt(){
+        return Integer.parseInt(readString());
+    }
+    public static double readDouble(){
+        return Double.parseDouble(readString());
+    }
+    public static float readFloat(){
+        return Float.parseFloat(readString());
+    }
+    public static boolean readBoolean(){
+        return Boolean.parseBoolean(readString());
+    }
+    public static short readShort(){
+        return Short.parseShort(readString());
+    }
+}
+```
+
+#### 打印流
+
+- 实现将基本数据类型的数据格式转化为字符串输出
+
+- 打印流：PrintStream和PrintWriter
+
+  - 提供了一系列重载的print和println方法，用于多种数据类型的输出
+
+  ![image-20220131021502089](imgs/image-20220131021502089.png)
+
+  ![image-20220131021528397](imgs/image-20220131021528397.png)
+
+  - PrintStream和PrintWriter的输出不会抛出IOException异常
+
+  - PrintStream和PrintWriter有自动flush功能
+
+  - PrintStream打印的所有字符都使用平台的默认字符编码转换为字节。在需要写入字符而不是写入字节的情况下，应该使用PrintWriter类
+
+  - System.out返回的是PrintStream的实例
+
+- 构造器
+
+  - PrintStream(File file)：创建具有指定文件且不带自动刷新的打印流
+  - PrintStream(File file, String csn)：创建具有指定文件名称和字符集且不带自动刷新的打印流
+  - PrintStream(OutputStream out)：创建新的打印流
+  - PrintStream(OutputStream out, Boolean autoFlush)：创建新的打印流。autoFlush如果为true，则每当写入byte数组，调用其中一个println方法或写入换行字符或字节`\n`时都会刷新输出缓冲区。
+  - PrintStream(OutputStream out, Boolean autoFlush, String encoding)：创建新的打印流
+  - PrintStream(String fileName)：创建具有指定文件名称且不带自动刷新的新打印流
+  - PrintStream(String fileName, String csn)：创建具有指定文件名称和字符集且不带自动行刷新的新打印流
+
+```java
+public class PrintStreamTest {
+    @Test
+    public void test01() {
+        PrintStream ps = null;
+        try {
+            ps = new PrintStream("a.txt", "utf-8");
+            ps.println("hello");
+            ps.println("你好");
+            ps.println(123);
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } finally {
+            if (ps != null) ps.close();
+        }
+    }
+    @Test
+    public void test02() throws FileNotFoundException {
+        FileOutputStream fos = new FileOutputStream("a.txt");
+        PrintStream ps = new PrintStream(fos, true);
+        if (ps != null) System.setOut(ps);
+        for (int i = 0; i < 255; i++) {
+            System.out.println(i);
+        }
+        ps.close();
+    }
+}
+```
+
+**自定义日志记录工具**
+
+```java
+public class Logger {
+    public static void log(String msg) {
+        PrintStream ps = null;
+        try {
+            ps = new PrintStream(new FileOutputStream("log.txt", true));
+            System.setOut(ps);
+            Date nowTim = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");
+            String time = sdf.format(nowTim);
+            System.out.println(time + ":" + msg);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (ps != null) ps.close();
+        }
+    }
+    public static void main(String[] args) {
+        log("登录了系统");
+        log("修改了状态");
+        log("退出了系统");
+    }
+}
+```
+
+#### Scanner类
+
+**构造方法**
+
+- Scanner(File source)：构造一个新的Scanner，它生成的值是新的指定文件扫描
+- Scanner(File source, String charsetName)：构造一个新的Scanner，它生成的值是从指定文件扫描的。
+- Scanner(InputStream source)：构造一个新的Scanner，它生成的值是从指定的输入流扫描的
+- Scanner(InputStream source, String charsetName)：构造一个新的Scanner，它生成的值是从指定的输入流扫描的
+
+**常用方法**
+
+- boolean hasNextXxx()：如果通过使用nextXxx（）方法，此扫描输入信息中的下一个标记可以解释为默认基数中的一个Xxx值，则返回true
+- Xxx nextXxx()：将输入信息的下一个标记扫描为一个Xxx
+
+```java
+
+```
+
+#### apache-common包的使用
+
+IO技术开发中，代码量很大，而且代码的重复率较高，为此Apache软件基金会，开发了IO技术的工具类commonsIO，大大简化了IO开发。
+
+- IOUtils类的使用
+
+```java
+- 静态方法：IOUtils.copy(InputStream in,OutputStream out)传递字节流，实现文件复制
+- 静态方法：IOUtils.closeQuietly(任意流对象)悄悄释放资源，自动处理close方法抛出的异常
+```
+
+```
+
+```
+
+- FileUtils类的使用
+
+```java
+- 静态方法：void copyDirectoryToDirectory(File src,File dest)：整个目录的复制，自动进行递归遍历
+          参数:
+          src:要复制的文件夹路径
+          dest:要将文件夹粘贴到哪里去
+             
+- 静态方法：void writeStringToFile(File file,String content)：将内容content写入到file中
+- 静态方法：String readFileToString(File file)：读取文件内容，并返回一个String
+- 静态方法：void copyFile(File srcFile,File destFile)：文件复制
+```
+
+```java
+
+```
+
