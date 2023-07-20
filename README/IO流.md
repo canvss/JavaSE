@@ -1687,7 +1687,29 @@ public class Logger {
 - Xxx nextXxx()：将输入信息的下一个标记扫描为一个Xxx
 
 ```java
-
+public class ScannerTest {
+    @Test
+    public void test01() {
+        Scanner input = new Scanner(System.in);
+        PrintStream ps = null;
+        try {
+            ps = new PrintStream("b.txt");
+            String temp = input.nextLine();
+            ps.write(temp.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (ps != null) ps.close();
+            input.close();
+        }
+    }
+    @Test
+    public void test02() throws FileNotFoundException {
+        Scanner input = new Scanner(new FileInputStream("b.txt"));
+        while (input.hasNextLine()) System.out.println(input.nextLine());
+        input.close();
+    }
+}
 ```
 
 #### apache-common包的使用
@@ -1701,8 +1723,10 @@ IO技术开发中，代码量很大，而且代码的重复率较高，为此Apa
 - 静态方法：IOUtils.closeQuietly(任意流对象)悄悄释放资源，自动处理close方法抛出的异常
 ```
 
-```
-
+```java
+    public void test01()throws IOException {
+        IOUtils.copy(new FileInputStream("a.txt"),new FileOutputStream("c.txt"));
+    }
 ```
 
 - FileUtils类的使用
@@ -1719,6 +1743,15 @@ IO技术开发中，代码量很大，而且代码的重复率较高，为此Apa
 ```
 
 ```java
-
+public class CommonsTest {
+    @Test
+    public void test02() throws IOException, InterruptedException {
+        FileUtils.copyDirectoryToDirectory(new File("/Users/canvs/Desktop/MySQL"),
+                                           new File("/Users/canvs/Desktop/MySQL_123"));
+        FileUtils.writeStringToFile(new File("b.txt"),"hello world!");
+        System.out.println(FileUtils.readFileToString(new File("b.txt"), "utf-8"));
+        FileUtils.copyFile(new File("a.txt"),new File("e.txt"));
+    }
+}
 ```
 
