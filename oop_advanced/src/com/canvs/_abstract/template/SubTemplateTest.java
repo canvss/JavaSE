@@ -7,7 +7,6 @@ package com.canvs._abstract.template;
 public class SubTemplateTest {
     public static void main(String[] args) {
         SubTemplate sub = new SubTemplate();
-        sub.code();
         sub.getTime();
     }
 }
