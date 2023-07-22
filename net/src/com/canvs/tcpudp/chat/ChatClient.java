@@ -9,7 +9,7 @@ import java.util.Scanner;
  * _*_ coding: utf-8 _*_
  * created by Canvs on 2023/7/22 17:27
  */
-public class ChatClent {
+public class ChatClient {
     public static void main(String[] args) {
         Socket socket = null;
         try {
