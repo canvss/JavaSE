@@ -297,6 +297,8 @@ public class ListFilesTest {
 
 `java.io`包下提供了各种流类和接口，用于获取不同种类的数据，并通过标准的方法输入或输出数据。
 
+<img src="imgs/IOStream.png" />
+
 - 按数据的流向不同分为：输入流和输出流
 
   - 输入流：把数据从其他设备上读取到内存中的流
