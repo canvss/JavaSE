@@ -1,8 +1,8 @@
-package com.canvs.reflectapply.data;
+package com.canvs.other;
 
-import org.junit.Test;
-
-import java.lang.reflect.Method;
+import com.canvs.reflectapply.data.Creature;
+import com.canvs.reflectapply.data.MyAnnotation;
+import com.canvs.reflectapply.data.MyInterface;
 
 /**
  * _*_ coding: utf-8 _*_
@@ -51,4 +51,11 @@ public class Person extends Creature<String> implements Comparable<Person>, MyIn
         System.out.println("showInfo method...");
     }
 
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
 }
