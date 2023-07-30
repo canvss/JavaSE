@@ -15,6 +15,8 @@ public class SwitchPattemMatter {
             formatted = String.format("double + %f", d);
         } else if (o instanceof String s) {
             formatted = String.format("String %s", s);
+        } else {
+            formatted = o.toString();
         }
         return formatted;
     }
