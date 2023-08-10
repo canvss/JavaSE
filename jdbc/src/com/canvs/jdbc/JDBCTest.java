@@ -2,7 +2,9 @@ package com.canvs.jdbc;
 
 import org.junit.Test;
 
+import java.io.FileInputStream;
 import java.sql.*;
+import java.util.Properties;
 
 public class JDBCTest {
     String url = "jdbc:mysql://bj-cynosdbmysql-grp-an5acmhk.sql.tencentcdb.com:28067/demo?serverTimezone=UTC";
@@ -14,7 +16,28 @@ public class JDBCTest {
         System.out.println(connection);
         connection.close();
     }
-
+    @Test
+    public void test02() throws Exception{
+        Properties p = new Properties();
+        p.load(new FileInputStream("jdbc.properties"));
+        String className = p.getProperty("className");
+        String url = p.getProperty("url");
+        String username = p.getProperty("username");
+        String password = p.getProperty("password");
+        Class<?> clazz = Class.forName(p.getProperty("className"));
+        Connection conn = DriverManager.getConnection(url, username, password);
+        String sql = "SELECT * FROM emps;";
+        PreparedStatement pst = conn.prepareStatement(sql);
+        ResultSet resultSet = pst.executeQuery();
+        while(resultSet.next()){
+            for (int i = 1; i <= 5 ; i++) {
+                System.out.print(resultSet.getObject(i)+"\t");
+            }
+            System.out.println();
+        }
+        pst.close();
+        conn.close();
+    }
     @Test
     public void insert() throws Exception {
         //把驱动类加载到内存中
