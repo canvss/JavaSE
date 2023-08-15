@@ -375,6 +375,53 @@ public class SQLBatch {
 }
 ```
 
+#### JDBCUtils
+
+```java
+public class JDBCUtils {
+    public static Connection getConnection() throws Exception {
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("jdbc.properties");
+        Properties ps = new Properties();
+        ps.load(is);
+        String className = ps.getProperty("className");
+        String username = ps.getProperty("username");
+        String url = ps.getProperty("url");
+        String password = ps.getProperty("password");
+        Class<?> clazz = Class.forName(className);
+        return DriverManager.getConnection(url, username, password);
+    }
+    public static void closeResource(Connection conn, Statement ps) {
+        try {
+            if (conn != null) conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (ps != null) ps.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void closeResource(Connection conn, Statement ps, ResultSet rs) {
+        try {
+            if (conn != null) conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (ps != null) ps.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (rs != null) rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
 #### 事务处理
 
 如果多条SQL要组成一个事务，要么一起成功，要么一起失败
@@ -448,6 +495,378 @@ public class SQLTransaction {
 }
 ```
 
+```java
+public class TransactionTest {
+    public void update(Connection conn, String sql, Object... args) {
+        PreparedStatement pst = null;
+        try {
+            pst = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                pst.setObject(i + 1, args[i]);
+            }
+            int len = pst.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(null, pst);
+        }
+    }
+    @Test
+    public void testUpdate() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            conn.setAutoCommit(false);
+            String sql = "UPDATE user SET salary = salary-100 WHERE id = ?";
+            update(conn, sql, 1001);
+            //模拟网络异常
+//            System.out.println(2 / 0);
+            String sql2 = "UPDATE user SET salary = salary+100 WHERE id =?";
+            update(conn, sql2, 1002);
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+            JDBCUtils.closeResource(conn, null);
+        }
+    }
+}
+```
+
+### DAO及相关实现类
+
+- DAO：Data Access Object访问数据信息的类和接口，包括了对数据的CRUD，而不包含任何业务相关的信息。也称BaseDAO
+- 作用：为了实现功能的模块化，更有利于代码的维护和升级
+
+#### BaseDAO
+
+```java
+public abstract class BaseDAO <T>{
+    private Class<T> clazz = null;
+    {
+        Type superclass = this.getClass().getGenericSuperclass();
+        ParameterizedType type = (ParameterizedType) superclass;
+        Type[] arguments = type.getActualTypeArguments();
+        clazz = (Class<T>) arguments[0];
+    }
+    public int update(Connection conn, String sql, Object...args){
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i+1,args[i]);
+            }
+            int len = ps.executeUpdate();
+            return len;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(null,ps);
+        }
+        return 0;
+    }
+    // 通用的查询操作，用于返回数据表中的一条记录
+    public T getInstance(Connection conn,String sql,Object...args){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i+1,args[i]);
+            }
+            rs = ps.executeQuery();
+            //获取结果集元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            //获取结果集中的列数
+            int columnCount = rsmd.getColumnCount();
+            if (rs.next()){
+                T t = clazz.newInstance();
+                //处理结果姐一行数据中的每一个列
+                for (int i = 0; i < columnCount; i++) {
+                    //获取列值
+                    Object columnValue = rs.getObject(i + 1);
+                    //获取每一个列的列名
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+                    //通过反射给t对象指定的columnName熟悉赋值为columValue
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t,columnValue);
+                }
+                return t;
+            }
+        } catch (Exception e) {
+          e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(null,ps,rs);
+        }
+        return null;
+    }
+    //通用的查询操作，用于返回数据表中的多条记录构成的集合
+    public List<T> getForList(Connection conn,String sql,Object...args){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i+1,args[i]);
+            }
+            rs = ps.executeQuery();
+            //获取结果集元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            //获取结果集中的列数
+            int columnCount = rsmd.getColumnCount();
+            ArrayList<T> list = new ArrayList<>();
+            while (rs.next()){
+                T t = clazz.newInstance();
+                //处理结果姐一行数据中的每一个列
+                for (int i = 0; i < columnCount; i++) {
+                    //获取列值
+                    Object columnValue = rs.getObject(i + 1);
+                    //获取每一个列的列名
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+                    //通过反射给t对象指定的columnName熟悉赋值为columValue
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t,columnValue);
+                }
+                list.add(t);
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(null,ps,rs);
+        }
+        return null;
+    }
+    //用于查询特殊值的通用的方法
+    public <E> E getValue(Connection conn,String sql,Object...args){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i+1,args[i]);
+            }
+            rs = ps.executeQuery();
+            if (rs.next()){
+                return (E) rs.getObject(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(null,ps,rs);
+        }
+        return null;
+    }
+```
+
+#### Java bean
+
+```java
+public class Customer {
+    private int id;
+    private String name;
+    private String email;
+    private Date birth;
+    public Customer() {
+    }
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public Date getBirth() {
+        return birth;
+    }
+    public void setBirth(Date birth) {
+        this.birth = birth;
+    }
+    public Customer(int id, String name, String email, Date birth) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.birth = birth;
+    }
+    @Override
+    public String toString() {
+        return "Customer [id=" + id + ", name=" + name + ", email=" + email + ", birth=" + birth + "]";
+    }
+}
+```
+
+#### CustomerDAO
+
+```java
+public interface CustomerDAO {
+    void insert(Connection conn,Customer cust);
+    void deleteById(Connection conn,int id);
+    void update(Connection conn, Customer cust);
+    Customer getCustomerById(Connection conn,int id);
+    List<Customer> getAll(Connection conn);
+    Long getCount(Connection conn);
+    Date getMaxBirth(Connection conn);
+}
+```
+
+#### CustomerDAOImpl
+
+```java
+public class CustomerDAOImpl extends BaseDAO<Customer> implements CustomerDAO {
+    @Override
+    public void insert(Connection conn, Customer cust) {
+        String sql = "INSERT INTO customer(id,name,email,birth) VALUES (?,?,?,?)";
+        update(conn, sql, cust.getId(), cust.getName(), cust.getEmail(), cust.getBirth());
+    }
+    @Override
+    public void deleteById(Connection conn, int id) {
+        String sql = "DELETE FROM customer WHERE id = ?";
+        update(conn, sql, id);
+    }
+    @Override
+    public void update(Connection conn, Customer cust) {
+        String sql = "UPDATE customer SET name = ?,email=?,birth = ? WHERE id = ?";
+        update(conn,sql,cust.getName(),cust.getEmail(),cust.getBirth(),cust.getId());
+    }
+    @Override
+    public Customer getCustomerById(Connection conn, int id) {
+        String sql = "SELECT * FROM customer WHERE id = ?";
+        return getInstance(conn,sql,id);
+    }
+    @Override
+    public List<Customer> getAll(Connection conn) {
+        String sql = "SELECT * FROM customer";
+        return getForList(conn,sql);
+    }
+    @Override
+    public Long getCount(Connection conn) {
+        String sql = "SELECT COUNT(*) FROM customer";
+        return getValue(conn,sql);
+    }
+    @Override
+    public Date getMaxBirth(Connection conn) {
+        String sql = "SELECT MAX(birth) FROM customer";
+        return getValue(conn,sql);
+    }
+}
+```
+
+#### CustomerDAOImplTest
+
+```java
+public class CustomerDAOImplTest {
+    private CustomerDAOImpl dao = new CustomerDAOImpl();
+    @Test
+    public void insert() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Customer cust = new Customer(1005, "jack", "jack@qq.com", new Date(17639379373L));
+            dao.insert(conn, cust);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn, null);
+        }
+    }
+    @Test
+    public void deleteById() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            dao.deleteById(conn, 1003);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn, null);
+        }
+    }
+    @Test
+    public void update() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Customer cust = new Customer(1005, "jack2", "jack2@qq.com", new Date(163838737889L));
+            dao.update(conn, cust);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn, null);
+        }
+    }
+    @Test
+    public void getCustomerById() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Customer cust = dao.getCustomerById(conn, 1002);
+            System.out.println(cust);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn, null);
+        }
+    }
+    @Test
+    public void getAll() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            List<Customer> all = dao.getAll(conn);
+            all.forEach(System.out::println);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn,null);
+        }
+    }
+    @Test
+    public void getCount() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Long count = dao.getCount(conn);
+            System.out.println(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn,null);
+        }
+    }
+    @Test
+    public void getMaxBirth() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            java.util.Date maxBirth = dao.getMaxBirth(conn);
+            System.out.println(maxBirth);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResource(conn,null);
+        }
+    }
+}
+```
+
 ### 数据库连接池
 
 连接对象的缓冲区。复制申请，分配管理，释放连接的操作。
@@ -495,8 +914,6 @@ maxActive=10
 maxWait=1000
 ```
 
-
-
 | 配置                          | **缺省** | **说明**                                                     |
 | ----------------------------- | -------- | ------------------------------------------------------------ |
 | name                          |          | 配置这个属性的意义在于，如果存在多个数据源，监控的时候可以通过名字来区分开来。 如果没有配置，将会生成一个名字，格式是：”DataSource-” + System.identityHashCode(this) |
@@ -523,4 +940,185 @@ maxWait=1000
 | filters                       |          | 属性类型是字符串，通过别名的方式配置扩展插件，常用的插件有： 监控统计用的filter:stat日志用的filter:log4j防御sql注入的filter:wall |
 | proxyFilters                  |          | 类型是List，如果同时配置了filters和proxyFilters，是组合关系，并非替换关系 |
 
-### 
+```java
+public class DruidTest {
+    public static void main(String[] args) throws Exception{
+        Properties p = new Properties();
+        p.load(DruidTest.class.getClassLoader().getResourceAsStream("druid.properties"));
+        DataSource dataSource = DruidDataSourceFactory.createDataSource(p);
+        Connection conn = dataSource.getConnection();
+        System.out.println(conn);
+        conn.close();
+    }
+    @Test
+    public void test(){
+        try {
+            Connection conn = JDBCUtils.getConnection();
+            System.out.println(conn);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+```java
+public class JDBCUtils {
+    private static DataSource source;
+    static {
+        try {
+            Properties pros = new Properties();
+            InputStream is = ClassLoader.getSystemClassLoader().getSystemResourceAsStream("druid.properties");
+            pros.load(is);
+            source = DruidDataSourceFactory.createDataSource(pros);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public static Connection getConnection() throws SQLException {
+        Connection conn = source.getConnection();
+        return conn;
+    }
+}
+```
+
+### Apache-DBUtils
+
+- commons-dbutils是Apache组织提供的一个开源JDBC工具类库，它是对JDBC的简单封装，并且使用dbutils能极大简化jdbc编码的工作量，同时也不会影响程序的性能
+
+- API介绍
+
+  - org.apache.commons.dbutils.QueryRunner
+
+  - org.apache.commons.dbutils.ResultSetHandler
+  - 工具类：org.apache.commons.dbutils.DbUtils   
+
+#### 主要的API的使用
+
+##### DBUtils
+
+- DBUtils：提供如关闭连接、装载JDBC驱动程序等常规工作的工具类，里面的所有方法都是静态方法
+  - **public static void close(…) throws java.sql.SQLException**：　DbUtils类提供了三个重载的关闭方法。这些方法检查所提供的参数是不是NULL，如果不是的话，它们就关闭Connection、Statement和ResultSet。
+  - public static void closeQuietly(…): 这一类方法不仅能在Connection、Statement和ResultSet为NULL情况下避免关闭，还能隐藏一些在程序中抛出的SQLEeception。
+  - public static void commitAndClose(Connection conn)throws SQLException： 用来提交连接的事务，然后关闭连接
+  - public static void commitAndCloseQuietly(Connection conn)： 用来提交连接，然后关闭连接，并且在关闭连接时不抛出SQL异常。 
+  - public static void rollback(Connection conn)throws SQLException：允许conn为null，因为方法内部做了判断
+  - public static void rollbackAndClose(Connection conn)throws SQLException
+  - rollbackAndCloseQuietly(Connection)
+  - public static boolean loadDriver(java.lang.String driverClassName)：这一方装载并注册JDBC驱动程序，如果成功就返回true。使用该方法，你不需要捕捉这个异常ClassNotFoundException。
+
+##### QueryRunner类
+
+- **该类简单化了SQL查询，它与ResultSetHandler组合在一起使用可以完成大部分的数据库操作，能够大大减少编码量。**
+- QueryRunner类提供了两个构造器：
+  - 默认的构造器
+  - 需要一个 javax.sql.DataSource 来作参数的构造器
+- QueryRunner类的主要方法：
+  - **更新**
+    - public int update(Connection conn, String sql, Object... params) throws SQLException:用来执行一个更新（插入、更新或删除）操作。
+    - ......
+  - **插入**
+    - public <T> T insert(Connection conn,String sql,ResultSetHandler<T> rsh, Object... params) throws SQLException：只支持INSERT语句，其中 rsh - The handler used to create the result object from the ResultSet of auto-generated keys.  返回值: An object generated by the handler.即自动生成的键值
+    - ....
+  - **批处理**
+    - public int[] batch(Connection conn,String sql,Object[][] params)throws SQLException： INSERT, UPDATE, or DELETE语句
+    - public <T> T insertBatch(Connection conn,String sql,ResultSetHandler<T> rsh,Object[][] params)throws SQLException：只支持INSERT语句
+    - .....
+  - **查询**
+    - public Object query(Connection conn, String sql, ResultSetHandler rsh,Object... params) throws SQLException：执行一个查询操作，在这个查询中，对象数组中的每个元素值被用来作为查询语句的置换参数。该方法会自行处理 PreparedStatement 和 ResultSet 的创建和关闭。
+    - ...... 
+
+```java
+public class QueryRunnerTest {
+    @Test
+    public void testInsert() throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "INSERT INTO customer VALUE(?,?,?,?)";
+        int count = runner.update(conn, sql, 1003, "ros", "ros@qq.com", "2001-9-16");
+        System.out.println("添加了 "+count+" 条记录");
+      	DbUtils.close(conn);
+    }
+    @Test
+    public void testDelete() throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "DELETE FROM customer WHERE id = ?";
+        int count = runner.update(conn,sql, 1005);
+        System.out.println(count);
+      	DbUtils.close(conn);
+    }
+}
+```
+
+#### ResultSetHandler接口及实现类
+
+- 该接口用于处理 java.sql.ResultSet，将数据按要求转换为另一种形式。
+- ResultSetHandler 接口提供了一个单独的方法：Object handle (java.sql.ResultSet .rs)。
+- 接口的主要实现类：
+
+  - ArrayHandler：把结果集中的第一行数据转成对象数组。
+  - ArrayListHandler：把结果集中的每一行数据都转成一个数组，再存放到List中。
+  - **BeanHandler：**将结果集中的第一行数据封装到一个对应的JavaBean实例中。
+  - **BeanListHandler：**将结果集中的每一行数据都封装到一个对应的JavaBean实例中，存放到List里。
+  - ColumnListHandler：将结果集中某一列的数据存放到List中。
+  - KeyedHandler(name)：将结果集中的每一行数据都封装到一个Map里，再把这些map再存到一个map里，其key为指定的key。
+  - **MapHandler：**将结果集中的第一行数据封装到一个Map里，key是列名，value就是对应的值。
+  - **MapListHandler：**将结果集中的每一行数据都封装到一个Map里，然后再存放到List
+  - **ScalarHandler：**查询单个值对象
+
+```java
+ @Test
+    public void testQueryInstance() throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "SELECT * FROM customer WHERE id = ?";
+        BeanHandler<Customer> handler = new BeanHandler<>(Customer.class);
+        Customer customer = runner.query(conn,sql, handler,1002);
+        System.out.println(customer);
+      	DbUtils.close(conn);
+    }
+    @Test
+    public void testQueryList() throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "SELECT * FROM customer";
+        BeanListHandler<Customer> handler = new BeanListHandler<>(Customer.class);
+        List<Customer> cust = runner.query(conn, sql, handler);
+        cust.forEach(System.out::println);
+      	DbUtils.close(conn);
+    }
+    //自定义ResultSetHandler的实现类
+    @Test
+    public void testQueryInstance1() throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "SELECT * FROM customer WHERE id = ?";
+        ResultSetHandler<Customer> handler = new ResultSetHandler<Customer>() {
+            @Override
+            public Customer handle(ResultSet resultSet) throws SQLException {
+                if (resultSet.next()){
+                    int id = resultSet.getInt("id");
+                    String name = resultSet.getString("name");
+                    String email = resultSet.getString("email");
+                    Date birth = resultSet.getDate("birth");
+                    return new Customer(id,name,email,birth);
+                }
+                return null;
+            }
+        };
+        Customer customer = runner.query(conn, sql, handler,1001);
+        System.out.println(customer);
+      	DbUtils.close(conn);
+    }
+    @Test
+    public void testQueryValue() throws SQLException {
+        QueryRunner runner = new QueryRunner();
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "SELECT MAX(birth) FROM customer";
+        Date birth = (Date) runner.query(conn, sql, new ScalarHandler());
+        System.out.println(birth);
+      	DbUtils.close(conn);
+    }
+```
+
